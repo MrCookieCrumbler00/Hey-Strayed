@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Crustacean Server Pop Tracker</title>
   <style>
     :root {
@@ -937,6 +938,42 @@ Wake phrase:
       elements.lastHeard.textContent = message || "Nothing yet";
     }
 
+    // Levenshtein distance for fuzzy word matching
+    function levenshtein(a, b) {
+      const m = a.length, n = b.length;
+      const dp = Array.from({ length: m + 1 }, (_, i) => Array(n + 1).fill(0).map((_, j) => j === 0 ? i : 0));
+      for (let j = 0; j <= n; j++) dp[0][j] = j;
+      for (let i = 1; i <= m; i++) {
+        for (let j = 1; j <= n; j++) {
+          dp[i][j] = a[i - 1] === b[j - 1]
+            ? dp[i - 1][j - 1]
+            : 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+        }
+      }
+      return dp[m][n];
+    }
+
+    function wordSimilarity(a, b) {
+      const maxLen = Math.max(a.length, b.length);
+      if (!maxLen) return 1;
+      return 1 - levenshtein(a, b) / maxLen;
+    }
+
+    function fuzzyMatch(word, target, threshold) {
+      return wordSimilarity(word, target) >= (threshold || 0.65);
+    }
+
+    function fuzzyIncludes(command, phrase, threshold) {
+      if (command.includes(phrase)) return true;
+      const phraseWords = phrase.split(/\s+/);
+      const textWords = command.split(/\s+/);
+      let pi = 0;
+      for (let ti = 0; ti < textWords.length && pi < phraseWords.length; ti++) {
+        if (wordSimilarity(textWords[ti], phraseWords[pi]) >= (threshold || 0.70)) pi++;
+      }
+      return pi === phraseWords.length;
+    }
+
     function findWakePhrase(normalizedTranscript) {
       for (const variant of WAKE_PHRASE_VARIANTS) {
         const index = normalizedTranscript.indexOf(variant);
@@ -948,10 +985,22 @@ Wake phrase:
       const compactTranscript = normalizedTranscript.replace(/[^a-z0-9]/g, "");
       for (const variant of WAKE_PHRASE_VARIANTS) {
         const compactVariant = variant.replace(/[^a-z0-9]/g, "");
-        const compactIndex = compactTranscript.indexOf(compactVariant);
-        if (compactIndex !== -1) {
-          return { variant, index: normalizedTranscript.indexOf("hey") };
+        if (compactTranscript.includes(compactVariant)) {
+          return { variant, index: Math.max(0, normalizedTranscript.indexOf("hey")) };
         }
+      }
+
+      // Fuzzy word-by-word: "hey <something close to strayed>"
+      const words = normalizedTranscript.split(/\s+/);
+      for (let i = 0; i < words.length - 1; i++) {
+        if (fuzzyMatch(words[i], "hey", 0.8) && fuzzyMatch(words[i + 1], "strayed", 0.58)) {
+          return { variant: "hey strayed", index: normalizedTranscript.indexOf(words[i]) };
+        }
+      }
+
+      // Single word that sounds like the assistant name
+      if (words.length === 1 && fuzzyMatch(words[0], "strayed", 0.58)) {
+        return { variant: "hey strayed", index: 0 };
       }
 
       return null;
@@ -1635,72 +1684,139 @@ Wake phrase:
       const command = normalized.slice(wakeMatch.index + wakeMatch.variant.length).trim();
       setListeningStatus(`Wake phrase heard. Processing: "${transcript}"`);
 
-      if (command.includes("refresh") || command.includes("update data") || command.includes("check server")) {
+      // Helper: returns true if command contains a fuzzy match for the vault word
+      // "volt", "valt", "vault", "vot" etc.
+      function cmdHasVault(cmd) {
+        return cmd.includes("vault") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "vault", 0.62));
+      }
+      function cmdHasLockedCrate(cmd) {
+        return cmd.includes("locked crate") || cmd.includes("lockedcrate")
+          || fuzzyIncludes(cmd, "locked crate", 0.72) || fuzzyIncludes(cmd, "lockedcrate", 0.72);
+      }
+      function cmdHasAirdrop(cmd) {
+        return cmd.includes("airdrop") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "airdrop", 0.68));
+      }
+      function cmdHasStop(cmd) {
+        return ["stop","cancel","end","clear","kill","off"].some((w) => cmd.includes(w) || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.80)));
+      }
+      function cmdHasStart(cmd) {
+        return ["start","begin","make","set","open"].some((w) => cmd.includes(w) || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.80)));
+      }
+      function cmdHasTimer(cmd) {
+        return cmd.includes("timer") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "timer", 0.72));
+      }
+      function cmdHasTimeLeft(cmd) {
+        return fuzzyIncludes(cmd, "how long", 0.75) || cmd.includes("time left") || cmd.includes("remaining") || cmd.includes("how much");
+      }
+      function cmdHasRefresh(cmd) {
+        return cmd.includes("refresh") || cmd.includes("update") || cmd.includes("check server")
+          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "refresh", 0.70));
+      }
+      function cmdHasPop(cmd) {
+        return ["pop","population","players","count","online"].some((w) => cmd.includes(w) || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.75)));
+      }
+      function cmdHasAlarm(cmd) {
+        return cmd.includes("alarm") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "alarm", 0.75));
+      }
+      function cmdHasSpeech(cmd) {
+        return cmd.includes("speech") || cmd.includes("voice output") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "speech", 0.72));
+      }
+
+      // ---- REFRESH ----
+      if (cmdHasRefresh(command)) {
         setListeningStatus("Heard a refresh command. Updating server data now.");
         refreshServers();
         speakText("Refreshing server data now.");
         return;
       }
 
-      if (
-        command === "what pop"
-        || command === "pop"
-        || command === "what is pop"
-        || command === "what's pop"
-        || command === "player count"
-        || command === "main server pop"
-        || command === "what is the pop"
-      ) {
-        answerServerPop(getMainServer() || findServerMention("main server"));
+      // ---- VAULT ALARM TOGGLE ----
+      if (cmdHasVault(command) && cmdHasAlarm(command)) {
+        const turnOff = cmdHasStop(command) || command.includes("off") || command.includes("disable") || command.includes("mute");
+        vaultAlarmEnabled = !turnOff;
+        localStorage.setItem(VAULT_ALARM_ENABLED_KEY, String(vaultAlarmEnabled));
+        updateVaultAlarmButton();
+        speakText(`Vault alarm turned ${vaultAlarmEnabled ? "on" : "off"}.`);
         return;
       }
 
-      if (
-        command.includes("what would the vault timer be")
-        || command.includes("how long would the vault timer be")
-        || command.includes("what is the vault timer")
-        || command.includes("how long is vault timer")
-        || command.includes("vault timer length")
-        || command.includes("vault timer would be")
-      ) {
-        answerVaultDurationEstimate();
-        return;
-      }
-
-      if (
-        command.includes("how long left on locked crate")
-        || command.includes("how long left on lockedcrate")
-        || command.includes("locked crate time left")
-        || command.includes("lockedcrate time left")
-        || command.includes("how long is left on locked crate timer")
-        || command.includes("how long on locked crate timer")
-      ) {
-        answerLockedcrateTimer();
-        return;
-      }
-
-      if (
-        command.includes("how long left on vault")
-        || command.includes("vault time left")
-        || command.includes("how long is left on vault timer")
-        || command.includes("how long on vault timer")
-      ) {
+      // ---- VAULT TIMER QUERY ----
+      if (cmdHasVault(command) && cmdHasTimeLeft(command) && !cmdHasStart(command) && !cmdHasStop(command)) {
         answerVaultTimer();
         return;
       }
 
+      // ---- VAULT DURATION ESTIMATE ----
+      if (cmdHasVault(command) && (command.includes("would") || command.includes("length") || command.includes("long is") || command.includes("estimate"))) {
+        answerVaultDurationEstimate();
+        return;
+      }
+
+      // ---- STOP VAULT TIMER ----
+      if (cmdHasVault(command) && cmdHasTimer(command) && cmdHasStop(command)) {
+        stopVaultTimer();
+        return;
+      }
+
+      // ---- START VAULT TIMER ----
+      if (cmdHasVault(command) && (cmdHasTimer(command) || cmdHasStart(command) || command.includes("opened"))) {
+        startVaultTimer();
+        return;
+      }
+
+      // ---- LOCKED CRATE TIME LEFT ----
+      if (cmdHasLockedCrate(command) && cmdHasTimeLeft(command)) {
+        answerLockedcrateTimer();
+        return;
+      }
+
+      // ---- STOP LOCKED CRATE TIMER ----
+      if (cmdHasLockedCrate(command) && cmdHasTimer(command) && cmdHasStop(command)) {
+        stopTimer();
+        return;
+      }
+
+      // ---- START LOCKED CRATE TIMER ----
+      if (cmdHasLockedCrate(command) && (cmdHasTimer(command) || cmdHasStart(command))) {
+        startTimer(15 * 60 * 1000, "Lockedcrate Timer");
+        return;
+      }
+
+      // ---- GENERIC TIMER STOP ----
+      if (cmdHasStop(command) && cmdHasTimer(command)) {
+        stopTimer();
+        return;
+      }
+
+      // ---- GENERIC TIMER STATUS ----
+      if (cmdHasTimeLeft(command) && cmdHasTimer(command)) {
+        answerBothTimers();
+        return;
+      }
+
+      // ---- TIMER STATUS (all timers) ----
       if (
-        command.includes("how long left on both timers")
-        || command.includes("how long left on timers")
-        || command.includes("timer status")
-        || command.includes("what timers are running")
-        || command.includes("how long left on all timers")
-        || command === "how long left"
+        command.includes("timer status")
+        || command.includes("what timers")
+        || fuzzyIncludes(command, "how long left", 0.75)
       ) {
         answerBothTimers();
         return;
       }
 
+      // ---- SET LAST EVENT: AIRDROP ----
+      if (cmdHasAirdrop(command) && (command.includes("last") || command.includes("was") || command.includes("just"))) {
+        setLastEvent("airdrop");
+        return;
+      }
+
+      // ---- SET LAST EVENT: LOCKED CRATE ----
+      if (cmdHasLockedCrate(command) && (command.includes("last") || command.includes("was") || command.includes("just"))) {
+        setLastEvent("lockedcrate");
+        return;
+      }
+
+      // ---- SET MAIN SERVER ----
       const setMainMatch = command.match(/(?:set|make|use|track)\s+(?:the\s+)?main\s+server(?:\s+to|\s+as)?\s+([a-z0-9 _-]+)/i)
         || command.match(/main\s+server(?:\s+to|\s+as)\s+([a-z0-9 _-]+)/i)
         || command.match(/track\s+([a-z0-9 _-]+)\s+(?:as\s+)?(?:main\s+server)?/i);
@@ -1709,112 +1825,33 @@ Wake phrase:
         return;
       }
 
-      if (
-        command.includes("airdrop was last")
-        || command.includes("last was airdrop")
-        || command.includes("airdrop last")
-      ) {
-        setLastEvent("airdrop");
-        return;
-      }
-
-      if (
-        command.includes("locked crate was last")
-        || command.includes("lockedcrate was last")
-        || command.includes("last was locked crate")
-        || command.includes("last was lockedcrate")
-        || command.includes("locked crate last")
-        || command.includes("lockedcrate last")
-      ) {
-        setLastEvent("lockedcrate");
-        return;
-      }
-
-      if (command.includes("locked crate timer") || command.includes("lockedcrate timer")) {
-        startTimer(15 * 60 * 1000, "Locked crate timer");
-        return;
-      }
-
-      if (
-        command.includes("start locked crate timer")
-        || command.includes("start lockedcrate timer")
-        || command.includes("make locked crate timer")
-        || command.includes("begin locked crate timer")
-      ) {
-        startTimer(15 * 60 * 1000, "Lockedcrate Timer");
-        return;
-      }
-
-      if (
-        command.includes("start vault timer")
-        || command.includes("vault timer")
-        || command.includes("vault opened")
-        || command.includes("start the vault")
-        || command.includes("begin vault timer")
-      ) {
-        startVaultTimer();
-        return;
-      }
-
-      if (
-        command.includes("stop vault timer")
-        || command.includes("cancel vault timer")
-        || command.includes("end vault timer")
-        || command.includes("clear vault timer")
-      ) {
-        stopVaultTimer();
-        return;
-      }
-
-      if (
-        command.includes("stop timer")
-        || command.includes("cancel timer")
-        || command.includes("end timer")
-        || command.includes("clear locked crate timer")
-      ) {
-        stopTimer();
-        return;
-      }
-
-      if (
-        command.includes("alarm off")
-        || command.includes("turn alarm off")
-        || command.includes("disable alarm")
-      ) {
-        alarmEnabled = false;
-        localStorage.setItem(ALARM_ENABLED_KEY, "false");
+      // ---- ALARM TOGGLE ----
+      if (cmdHasAlarm(command)) {
+        const turnOff = cmdHasStop(command) || command.includes("off") || command.includes("disable") || command.includes("mute");
+        alarmEnabled = !turnOff;
+        localStorage.setItem(ALARM_ENABLED_KEY, String(alarmEnabled));
         updateAlarmButton();
-        speakText("Alarm turned off.");
+        speakText(`Alarm turned ${alarmEnabled ? "on" : "off"}.`);
         return;
       }
 
-      if (
-        command.includes("alarm on")
-        || command.includes("turn alarm on")
-        || command.includes("enable alarm")
-      ) {
-        alarmEnabled = true;
-        localStorage.setItem(ALARM_ENABLED_KEY, "true");
-        updateAlarmButton();
-        speakText("Alarm turned on.");
+      // ---- SPEECH TOGGLE ----
+      if (cmdHasSpeech(command)) {
+        const turnOff = cmdHasStop(command) || command.includes("off") || command.includes("disable");
+        speechEnabled = !turnOff;
+        localStorage.setItem(SPEECH_ENABLED_KEY, String(speechEnabled));
+        updateSpeechButton();
+        speakText(`Speech turned ${speechEnabled ? "on" : "off"}.`);
         return;
       }
 
-      if (
-        command.includes("voice commands off")
-        || command.includes("turn voice commands off")
-        || command.includes("stop listening")
-      ) {
+      // ---- VOICE COMMANDS TOGGLE ----
+      if ((command.includes("voice") || command.includes("listening")) && (command.includes("off") || command.includes("stop"))) {
         stopListening();
         speakText("Voice commands turned off.");
         return;
       }
-
-      if (
-        command.includes("voice commands on")
-        || command.includes("turn voice commands on")
-        || command.includes("start listening")
-      ) {
+      if ((command.includes("voice") || command.includes("listening")) && (command.includes("on") || command.includes("start"))) {
         listeningEnabled = true;
         localStorage.setItem(LISTENING_ENABLED_KEY, "true");
         updateListeningButton();
@@ -1823,102 +1860,64 @@ Wake phrase:
         return;
       }
 
-      if (
-        command.includes("keep awake on")
-        || command.includes("turn keep awake on")
-        || command.includes("screen stay on")
-        || command.includes("keep screen awake")
-      ) {
-        wakeLockWanted = true;
-        localStorage.setItem(WAKE_LOCK_ENABLED_KEY, "true");
+      // ---- KEEP AWAKE ----
+      if (command.includes("awake") || command.includes("screen on") || command.includes("keep screen")) {
+        const turnOff = command.includes("off") || command.includes("allow sleep") || command.includes("stop");
+        wakeLockWanted = !turnOff;
+        localStorage.setItem(WAKE_LOCK_ENABLED_KEY, String(wakeLockWanted));
         syncWakeLock();
-        speakText("Keep awake turned on.");
+        speakText(`Keep awake turned ${wakeLockWanted ? "on" : "off"}.`);
         return;
       }
 
-      if (
-        command.includes("keep awake off")
-        || command.includes("turn keep awake off")
-        || command.includes("allow sleep")
-      ) {
-        wakeLockWanted = false;
-        localStorage.setItem(WAKE_LOCK_ENABLED_KEY, "false");
-        syncWakeLock();
-        speakText("Keep awake turned off.");
-        return;
-      }
-
-      if (
-        command.includes("vault alarm off")
-        || command.includes("turn vault alarm off")
-        || command.includes("disable vault alarm")
-        || command.includes("mute vault alarm")
-      ) {
-        vaultAlarmEnabled = false;
-        localStorage.setItem(VAULT_ALARM_ENABLED_KEY, "false");
-        updateVaultAlarmButton();
-        speakText("Vault alarm turned off.");
-        return;
-      }
-
-      if (
-        command.includes("vault alarm on")
-        || command.includes("turn vault alarm on")
-        || command.includes("enable vault alarm")
-        || command.includes("unmute vault alarm")
-      ) {
-        vaultAlarmEnabled = true;
-        localStorage.setItem(VAULT_ALARM_ENABLED_KEY, "true");
-        updateVaultAlarmButton();
-        speakText("Vault alarm turned on.");
-        return;
-      }
-
-      if (
-        command.includes("speech off")
-        || command.includes("turn speech off")
-        || command.includes("disable speech")
-      ) {
-        speechEnabled = false;
-        localStorage.setItem(SPEECH_ENABLED_KEY, "false");
-        updateSpeechButton();
-        speakText("Speech turned off.");
-        return;
-      }
-
-      if (
-        command.includes("speech on")
-        || command.includes("turn speech on")
-        || command.includes("enable speech")
-      ) {
-        speechEnabled = true;
-        localStorage.setItem(SPEECH_ENABLED_KEY, "true");
-        updateSpeechButton();
-        speakText("Speech turned on.");
-        return;
-      }
-
+      // ---- GENERIC TIMER START (with duration) ----
       const timerMatch = command.match(/(?:make|set|start)\s+(?:a\s+)?(.+?)\s+timer/)
         || command.match(/timer\s+(?:for\s+)?(.+)/)
         || command.match(/(.+?)\s+timer/);
       if (timerMatch) {
         const durationMs = parseDurationToMs(timerMatch[1]);
-        startTimer(durationMs, "Lockedcrate Timer");
-        return;
+        if (durationMs) {
+          startTimer(durationMs, "Lockedcrate Timer");
+          return;
+        }
       }
 
-      if (isPopulationQuestion(command)) {
+      // ---- POP QUESTION ----
+      if (cmdHasPop(command) || isPopulationQuestion(command)) {
         answerServerPop(findServerMention(command));
         return;
       }
 
+      // ---- EMPTY / JUST WAKE WORD ----
       if (!command || command.length < 3) {
-        answerServerPop(findServerMention("current server"));
+        answerServerPop(getMainServer() || findServerMention("main server"));
         return;
       }
 
-      setListeningStatus("Wake phrase detected, but I didn't understand the command.", true);
-      speakText("I heard you, but I didn't understand the command.");
+      // ---- BEST GUESS FALLBACK ----
+      // Score each action and pick the most likely one instead of giving up
+      const scores = [
+        { score: cmdHasPop(command) ? 3 : 0, action: () => answerServerPop(findServerMention(command)) },
+        { score: (cmdHasVault(command) ? 2 : 0) + (cmdHasTimeLeft(command) ? 2 : 0), action: () => answerVaultTimer() },
+        { score: (cmdHasLockedCrate(command) ? 2 : 0) + (cmdHasTimeLeft(command) ? 2 : 0), action: () => answerLockedcrateTimer() },
+        { score: cmdHasVault(command) && cmdHasStart(command) ? 4 : 0, action: () => startVaultTimer() },
+        { score: cmdHasLockedCrate(command) && cmdHasStart(command) ? 4 : 0, action: () => startTimer(15 * 60 * 1000, "Lockedcrate Timer") },
+        { score: cmdHasAirdrop(command) ? 2 : 0, action: () => setLastEvent("airdrop") },
+        { score: cmdHasLockedCrate(command) ? 2 : 0, action: () => setLastEvent("lockedcrate") },
+        { score: cmdHasRefresh(command) ? 3 : 0, action: () => { refreshServers(); speakText("Refreshing server data."); } },
+        { score: cmdHasTimer(command) ? 2 : 0, action: () => answerBothTimers() },
+      ];
+
+      const best = scores.reduce((a, b) => b.score > a.score ? b : a, scores[0]);
+      if (best.score > 0) {
+        setListeningStatus(`Doing my best with: "${transcript}"`);
+        best.action();
+        return;
+      }
+
+      // Absolute last resort: just report current pop
+      setListeningStatus(`Couldn't parse command, reporting main server pop.`);
+      answerServerPop(getMainServer() || findServerMention("main server"));
     }
 
     function stopListening() {
@@ -2083,14 +2082,8 @@ Wake phrase:
             localStorage.setItem(MAIN_SERVER_KEY, activeMainServer.name);
           }
 
-          const shouldSpeakMainUpdate = mainServerPreviousPlayerCount !== null
-            && mainServerPreviousPlayerCount !== activeMainServer.playerCount;
           mainServerPreviousPlayerCount = activeMainServer.playerCount;
           updateMainServerDisplay();
-
-          if (shouldSpeakMainUpdate) {
-            speakPlayerCount(activeMainServer);
-          }
         }
 
         updateLastUpdated();
