@@ -450,7 +450,7 @@
 <body>
   <div class="voice-orb-wrap" id="voiceOrbWrap" aria-hidden="true">
     <div class="voice-orb">
-      <div class="voice-orb-text" id="voiceOrbText">Strayed</div>
+      <div class="voice-orb-text" id="voiceOrbText">Jarvis</div>
     </div>
   </div>
 
@@ -465,13 +465,13 @@
             <h2>Main Server</h2>
             <div class="info-wrap">
               <div class="info-dot">i</div>
-              <div class="info-tip">Shows the live pop for your selected main server.
+              <div class="info-tip">Shows live player count for your selected main server. Auto-refreshes every 15 seconds.
 
-Voice:
-"what pop"
-"main server pop"
-"set main server to EU1"
-"refresh"</div>
+Voice commands — say <strong>Jarvis</strong> then:
+· <em>what pop</em> — current player count
+· <em>switch to EU1</em> — change main server
+· <em>set main server to NA2</em> — change main server
+· <em>refresh</em> — force a data update</div>
             </div>
           </div>
           <div class="controls">
@@ -497,11 +497,15 @@ Voice:
             <h2>Map Events</h2>
             <div class="info-wrap">
               <div class="info-dot">i</div>
-              <div class="info-tip">Tracks the hourly map-event rotation from your main server reset timing.
+              <div class="info-tip">Tracks the hourly map-event rotation anchored to your main server's wipe time. Set the last event once and it auto-tracks the rotation.
 
-Voice:
-"airdrop was last"
-"locked crate was last"</div>
+Voice commands — say <strong>Jarvis</strong> then:
+· <em>airdrop was last</em> — mark airdrop as just happened
+· <em>locked crate was last</em> — mark locked crate as just happened
+· <em>what is next</em> — hear the next event and ETA
+· <em>when is next airdrop</em> — ETA for next airdrop
+· <em>when is next locked crate</em> — ETA for next locked crate
+· <em>how long until next event</em> — time remaining</div>
             </div>
           </div>
           <div class="compact-stack">
@@ -537,15 +541,13 @@ Voice:
             <h2>Lockedcrate Timer</h2>
             <div class="info-wrap">
               <div class="info-dot">i</div>
-              <div class="info-tip">Manual lockedcrate countdown. Default start is 15 minutes.
+              <div class="info-tip">Manual lockedcrate countdown. Default is 15 minutes. Jarvis will announce when it finishes.
 
-Voice:
-"start locked crate timer"
-"locked crate timer"
-"how long left on locked crate"
-"stop timer"
-"alarm on"
-"alarm off"</div>
+Voice commands — say <strong>Jarvis</strong> then:
+· <em>start locked crate timer</em> — starts 15 min timer
+· <em>stop timer</em> — cancels the timer
+· <em>how long left on locked crate</em> — remaining time
+· <em>timer status</em> — check all active timers</div>
             </div>
           </div>
           <div class="compact-stack">
@@ -562,7 +564,6 @@ Voice:
               <button id="setTimerButton" type="button">Start timer</button>
             </div>
             <div class="controls">
-              <button id="toggleAlarmButton" type="button">Alarm: On</button>
               <button id="stopTimerButton" type="button">Stop timer</button>
             </div>
             <div class="stats">
@@ -579,15 +580,13 @@ Voice:
             <h2>Vault Tracker</h2>
             <div class="info-wrap">
               <div class="info-dot">i</div>
-              <div class="info-tip">Tracks a vault on the main server. Close time updates live with pop.
+              <div class="info-tip">Tracks how long a vault stays open on the main server. Close time adjusts live as player count changes. Jarvis announces when the vault closes and at 5 minutes remaining.
 
-Voice:
-"start vault timer"
-"stop vault timer"
-"what would the vault timer be"
-"how long left on vault"
-"vault alarm on"
-"vault alarm off"</div>
+Voice commands — say <strong>Jarvis</strong> then:
+· <em>start vault timer</em> — vault just opened
+· <em>stop vault timer</em> — cancel vault tracking
+· <em>how long left on vault</em> — remaining open time
+· <em>what would the vault timer be</em> — estimate based on current pop</div>
             </div>
           </div>
           <div class="compact-stack">
@@ -595,10 +594,6 @@ Voice:
             <div class="controls">
               <button id="startVaultButton" type="button">Start vault timer</button>
               <button id="stopVaultButton" type="button">Stop vault timer</button>
-            </div>
-            <div class="controls">
-              <button id="toggleVaultAlarmButton" type="button">Vault Alarm: On</button>
-              <div class="status" id="vaultAlertStatus">Vault alerts follow the main server pop.</div>
             </div>
             <div class="stats single-stat">
               <div class="stat">
@@ -617,15 +612,12 @@ Voice:
           <h2>Voice Controls</h2>
           <div class="info-wrap">
             <div class="info-dot">i</div>
-            <div class="info-tip">Controls the speaking voice and whether Strayed is listening.
+              <div class="info-tip">Controls the speaking voice and whether Jarvis is listening for commands. Wake word is <strong>Jarvis</strong> — say it before any command.
 
-Voice:
-"speech on"
-"speech off"
-"voice commands on"
-"voice commands off"
-"keep awake on"
-"keep awake off"</div>
+Voice commands — say <strong>Jarvis</strong> then:
+· <em>speech on / speech off</em> — toggle voice responses
+· <em>voice commands on / off</em> — toggle listening
+· <em>keep awake on / off</em> — prevent screen sleep</div>
           </div>
         </div>
         <div class="compact-stack">
@@ -651,10 +643,10 @@ Voice:
           <h2>Voice Detail</h2>
           <div class="info-wrap">
             <div class="info-dot">i</div>
-            <div class="info-tip">Shows what Strayed last heard and the current wake phrase.
+              <div class="info-tip">Shows what Jarvis last heard and parsed. Useful for debugging if a command didn't work — check what text was actually recognized.
 
-Wake phrase:
-"Hey Strayed"</div>
+Wake word: <strong>Jarvis</strong>
+Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also work. Commands are matched by keywords, not exact phrases.</div>
           </div>
         </div>
         <div class="stats" aria-label="Voice Debug">
@@ -664,7 +656,7 @@ Wake phrase:
           </div>
           <div class="stat">
             <div class="label">Wake Phrase</div>
-            <div class="value" id="wakePhrase" style="font-size: 1rem; font-weight: 500;">Hey Strayed</div>
+            <div class="value" id="wakePhrase" style="font-size: 1rem; font-weight: 500;">Jarvis</div>
           </div>
         </div>
       </section>
@@ -682,8 +674,7 @@ Wake phrase:
     const SPEECH_ENABLED_KEY = "crustacean-speech-enabled";
     const VOICE_KEY = "crustacean-selected-voice";
     const LISTENING_ENABLED_KEY = "crustacean-listening-enabled";
-    const ALARM_ENABLED_KEY = "crustacean-alarm-enabled";
-    const WAKE_PHRASE = "hey strayed";
+    const WAKE_PHRASE = "jarvis";
     const LAST_EVENT_KEY = "crustacean-last-event";
     const LAST_EVENT_TIME_KEY = "crustacean-last-event-time";
     const TIMER_TARGET_KEY = "crustacean-timer-target";
@@ -691,20 +682,16 @@ Wake phrase:
     const TIMER_DURATION_KEY = "crustacean-timer-duration";
     const VAULT_ACTIVE_KEY = "crustacean-vault-active";
     const VAULT_OPENED_AT_KEY = "crustacean-vault-opened-at";
-    const VAULT_ALARM_ENABLED_KEY = "crustacean-vault-alarm-enabled";
     const WAKE_LOCK_ENABLED_KEY = "crustacean-wake-lock-enabled";
     const WAKE_PHRASE_VARIANTS = [
-      "hey strayed",
-      "hey steight",
-      "hey straight",
-      "hey strait",
-      "hey strade",
-      "hey stray",
-      "hey strayd",
-      "hey stradee",
-      "hey strady",
-      "hey steyed",
-      "hey stayed"
+      "jarvis",
+      "jarves",
+      "jarvice",
+      "jarvas",
+      "jarvus",
+      "jarvi",
+      "java",
+      "jarv"
     ];
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -726,13 +713,10 @@ Wake phrase:
       eventStatus: document.getElementById("eventStatus"),
       startVaultButton: document.getElementById("startVaultButton"),
       stopVaultButton: document.getElementById("stopVaultButton"),
-      toggleVaultAlarmButton: document.getElementById("toggleVaultAlarmButton"),
       vaultStatus: document.getElementById("vaultStatus"),
-      vaultAlertStatus: document.getElementById("vaultAlertStatus"),
       vaultRemaining: document.getElementById("vaultRemaining"),
       timerInput: document.getElementById("timerInput"),
       setTimerButton: document.getElementById("setTimerButton"),
-      toggleAlarmButton: document.getElementById("toggleAlarmButton"),
       stopTimerButton: document.getElementById("stopTimerButton"),
       timerVisual: document.getElementById("timerVisual"),
       timerLabelDisplay: document.getElementById("timerLabelDisplay"),
@@ -753,8 +737,6 @@ Wake phrase:
     let availableVoices = [];
     let speechEnabled = localStorage.getItem(SPEECH_ENABLED_KEY) !== "false";
     let listeningEnabled = localStorage.getItem(LISTENING_ENABLED_KEY) === "true";
-    let alarmEnabled = localStorage.getItem(ALARM_ENABLED_KEY) !== "false";
-    let vaultAlarmEnabled = localStorage.getItem(VAULT_ALARM_ENABLED_KEY) !== "false";
     let wakeLockWanted = localStorage.getItem(WAKE_LOCK_ENABLED_KEY) === "true";
     let recognition = null;
     let recognitionActive = false;
@@ -807,26 +789,8 @@ Wake phrase:
       elements.vaultStatus.classList.toggle("error", isError);
     }
 
-    function setVaultAlertStatus(message, isError = false) {
-      elements.vaultAlertStatus.textContent = message;
-      elements.vaultAlertStatus.classList.toggle("error", isError);
-    }
-
     function updateListeningButton() {
       elements.toggleListeningButton.textContent = `Voice Commands: ${listeningEnabled ? "On" : "Off"}`;
-    }
-
-    function updateAlarmButton() {
-      elements.toggleAlarmButton.textContent = `Alarm: ${alarmEnabled ? "On" : "Off"}`;
-    }
-
-    function updateVaultAlarmButton() {
-      elements.toggleVaultAlarmButton.textContent = `Vault Alarm: ${vaultAlarmEnabled ? "On" : "Off"}`;
-      setVaultAlertStatus(
-        vaultAlarmEnabled
-          ? "Vault alerts follow the main server pop."
-          : "Vault alarm sounds and voice alerts are off."
-      );
     }
 
     function updateWakeLockButton() {
@@ -883,14 +847,14 @@ Wake phrase:
       elements.voiceOrbWrap.classList.add("visible");
       elements.voiceOrbWrap.classList.toggle("listening", mode === "listening");
       elements.voiceOrbWrap.classList.toggle("speaking", mode === "speaking");
-      elements.voiceOrbText.textContent = label || "Strayed";
+      elements.voiceOrbText.textContent = label || "Jarvis";
     }
 
     function hideVoiceOrb(delayMs = 250) {
       clearTimeout(orbHideTimer);
       orbHideTimer = setTimeout(() => {
         elements.voiceOrbWrap.classList.remove("visible", "listening", "speaking");
-        elements.voiceOrbText.textContent = "Strayed";
+        elements.voiceOrbText.textContent = "Jarvis";
       }, delayMs);
     }
 
@@ -986,21 +950,28 @@ Wake phrase:
       for (const variant of WAKE_PHRASE_VARIANTS) {
         const compactVariant = variant.replace(/[^a-z0-9]/g, "");
         if (compactTranscript.includes(compactVariant)) {
-          return { variant, index: Math.max(0, normalizedTranscript.indexOf("hey")) };
+          return { variant, index: Math.max(0, normalizedTranscript.indexOf(variant[0])) };
         }
       }
 
-      // Fuzzy word-by-word: "hey <something close to strayed>"
+      // Fuzzy word-by-word: any word that sounds like "jarvis"
       const words = normalizedTranscript.split(/\s+/);
-      for (let i = 0; i < words.length - 1; i++) {
-        if (fuzzyMatch(words[i], "hey", 0.8) && fuzzyMatch(words[i + 1], "strayed", 0.58)) {
-          return { variant: "hey strayed", index: normalizedTranscript.indexOf(words[i]) };
+      for (let i = 0; i < words.length; i++) {
+        if (fuzzyMatch(words[i], "jarvis", 0.58)) {
+          return { variant: "jarvis", index: normalizedTranscript.indexOf(words[i]) };
         }
       }
 
-      // Single word that sounds like the assistant name
-      if (words.length === 1 && fuzzyMatch(words[0], "strayed", 0.58)) {
-        return { variant: "hey strayed", index: 0 };
+      // Also catch "hey jarvis" style
+      for (let i = 0; i < words.length - 1; i++) {
+        if (fuzzyMatch(words[i], "hey", 0.8) && fuzzyMatch(words[i + 1], "jarvis", 0.58)) {
+          return { variant: "jarvis", index: normalizedTranscript.indexOf(words[i]) };
+        }
+      }
+
+      // Single-word utterance that sounds like jarvis
+      if (words.length === 1 && fuzzyMatch(words[0], "jarvis", 0.58)) {
+        return { variant: "jarvis", index: 0 };
       }
 
       return null;
@@ -1136,7 +1107,7 @@ Wake phrase:
       }
 
       utterance.addEventListener("start", () => {
-        showVoiceOrb("speaking", "Strayed");
+        showVoiceOrb("speaking", "Jarvis");
       });
 
       utterance.addEventListener("end", () => {
@@ -1413,34 +1384,6 @@ Wake phrase:
       }
     }
 
-    function playAlarm(isEnabled = true) {
-      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
-      if (!isEnabled) {
-        return;
-      }
-
-      if (!AudioContextClass) {
-        speakText("Timer finished.");
-        return;
-      }
-
-      const context = new AudioContextClass();
-      const now = context.currentTime;
-      [0, 0.25, 0.5].forEach((offset) => {
-        const oscillator = context.createOscillator();
-        const gain = context.createGain();
-        oscillator.type = "sine";
-        oscillator.frequency.setValueAtTime(880, now + offset);
-        gain.gain.setValueAtTime(0.001, now + offset);
-        gain.gain.exponentialRampToValueAtTime(0.2, now + offset + 0.02);
-        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.18);
-        oscillator.connect(gain);
-        gain.connect(context.destination);
-        oscillator.start(now + offset);
-        oscillator.stop(now + offset + 0.2);
-      });
-    }
-
     function parseDurationToMs(input) {
       const normalized = String(input || "").toLowerCase();
       let totalMs = 0;
@@ -1502,8 +1445,7 @@ Wake phrase:
         elements.timerHeroSubtext.textContent = "Finished";
         elements.timerVisual.style.setProperty("--timer-progress", "0");
         setTimerStatus("Lockedcrate timer finished.");
-        speakText(`${timerLabel || "Lockedcrate Timer"} is finished.`);
-        playAlarm();
+        speakText(`${timerLabel || "Lockedcrate"} is open. Locked crate has spawned.`);
         timerTargetMs = 0;
         timerLabel = "";
         timerDurationMs = 0;
@@ -1519,9 +1461,7 @@ Wake phrase:
       elements.timerVisual.style.setProperty("--timer-progress", `${Math.round(remainingRatio * 100)}`);
       elements.timerLabelDisplay.textContent = timerLabel || "Lockedcrate Timer";
       elements.timerHeroRemaining.textContent = formatDuration(remaining);
-      elements.timerHeroSubtext.textContent = alarmEnabled
-        ? "Alarm will sound when this ends."
-        : "Alarm is off for this timer.";
+      elements.timerHeroSubtext.textContent = "Jarvis will announce when the locked crate opens.";
       elements.timerRemaining.textContent = formatDuration(remaining);
       setTimerStatus(`${timerLabel || "Lockedcrate Timer"} is running.`);
     }
@@ -1582,13 +1522,10 @@ Wake phrase:
 
       if (remaining <= 0) {
         elements.vaultRemaining.textContent = "0s";
-        setVaultStatus(`Vault on ${mainServer.name} should be closed now.`);
+        setVaultStatus(`Vault on ${mainServer.name} has closed.`);
         if (!vaultClosedAnnounced) {
           vaultClosedAnnounced = true;
-          if (vaultAlarmEnabled) {
-            speakText(`Vault on ${mainServer.name} should be closed now.`);
-          }
-          playAlarm(vaultAlarmEnabled);
+          speakText(`Vault on ${mainServer.name} has closed.`);
         }
         vaultActive = false;
         vaultOpenedAtMs = 0;
@@ -1602,9 +1539,7 @@ Wake phrase:
 
       if (remaining <= 5 * 60 * 1000 && !vaultFiveMinuteWarned) {
         vaultFiveMinuteWarned = true;
-        if (vaultAlarmEnabled) {
-          speakText(`Vault on ${mainServer.name} closes in 5 minutes.`);
-        }
+        speakText(`Vault on ${mainServer.name} closes in 5 minutes.`);
       }
 
       if (remaining > 5 * 60 * 1000) {
@@ -1680,9 +1615,25 @@ Wake phrase:
       }
 
       heardWakePhrase = true;
-      showVoiceOrb("listening", "Strayed");
-      const command = normalized.slice(wakeMatch.index + wakeMatch.variant.length).trim();
-      setListeningStatus(`Wake phrase heard. Processing: "${transcript}"`);
+      showVoiceOrb("listening", "Jarvis");
+
+      // Extract the command: everything after the wake word
+      // wakeMatch.index is char position of wake word start; skip past the whole wake word
+      let command = "";
+      {
+        const afterWake = normalized.slice(wakeMatch.index + wakeMatch.variant.length).trim();
+        // Also try stripping a leading "hey" if the transcript was "hey jarvis ..."
+        const heyStripped = normalized.replace(/^hey\s+/, "").trim();
+        const afterHeyWake = heyStripped.slice(heyStripped.indexOf(wakeMatch.variant) !== -1
+          ? heyStripped.indexOf(wakeMatch.variant) + wakeMatch.variant.length
+          : 0).trim();
+        command = afterWake.length >= afterHeyWake.length ? afterWake : afterHeyWake;
+        // If command is empty or just the wake word itself, try the whole normalized minus any jarvis token
+        if (!command) {
+          command = normalized.split(/\s+/).filter((w) => !fuzzyMatch(w, "jarvis", 0.58)).join(" ").trim();
+        }
+      }
+      setListeningStatus(`Wake phrase heard. Processing: "${transcript}" → command: "${command}"`);
 
       // Helper: returns true if command contains a fuzzy match for the vault word
       // "volt", "valt", "vault", "vot" etc.
@@ -1697,10 +1648,14 @@ Wake phrase:
         return cmd.includes("airdrop") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "airdrop", 0.68));
       }
       function cmdHasStop(cmd) {
-        return ["stop","cancel","end","clear","kill","off"].some((w) => cmd.includes(w) || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.80)));
+        // Only exact word matches for very short words to avoid false positives
+        const words = cmd.split(/\s+/);
+        return ["stop","cancel","end","clear","kill"].some((w) => cmd.includes(w))
+          || words.some((t) => t === "off");
       }
       function cmdHasStart(cmd) {
-        return ["start","begin","make","set","open"].some((w) => cmd.includes(w) || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.80)));
+        return ["start","begin","open","launch"].some((w) => cmd.includes(w))
+          || cmd.split(/\s+/).some((t) => fuzzyMatch(t, "start", 0.80));
       }
       function cmdHasTimer(cmd) {
         return cmd.includes("timer") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "timer", 0.72));
@@ -1727,16 +1682,6 @@ Wake phrase:
         setListeningStatus("Heard a refresh command. Updating server data now.");
         refreshServers();
         speakText("Refreshing server data now.");
-        return;
-      }
-
-      // ---- VAULT ALARM TOGGLE ----
-      if (cmdHasVault(command) && cmdHasAlarm(command)) {
-        const turnOff = cmdHasStop(command) || command.includes("off") || command.includes("disable") || command.includes("mute");
-        vaultAlarmEnabled = !turnOff;
-        localStorage.setItem(VAULT_ALARM_ENABLED_KEY, String(vaultAlarmEnabled));
-        updateVaultAlarmButton();
-        speakText(`Vault alarm turned ${vaultAlarmEnabled ? "on" : "off"}.`);
         return;
       }
 
@@ -1816,23 +1761,63 @@ Wake phrase:
         return;
       }
 
-      // ---- SET MAIN SERVER ----
-      const setMainMatch = command.match(/(?:set|make|use|track)\s+(?:the\s+)?main\s+server(?:\s+to|\s+as)?\s+([a-z0-9 _-]+)/i)
-        || command.match(/main\s+server(?:\s+to|\s+as)\s+([a-z0-9 _-]+)/i)
-        || command.match(/track\s+([a-z0-9 _-]+)\s+(?:as\s+)?(?:main\s+server)?/i);
-      if (setMainMatch) {
-        setMainServer(findServerMention(setMainMatch[1]));
+      // ---- MAP EVENT QUERIES ----
+      function answerNextEvent() {
+        const nextEvent = getNextMapEvent();
+        if (!nextEvent) {
+          speakText("I don't have enough information to predict the next map event. Tell me which event was last.");
+          return;
+        }
+        const remaining = Math.max(0, nextEvent.nextEventTime - Date.now());
+        speakText(`Next event is ${formatEventName(nextEvent.nextEventType)} in ${formatDurationSpeech(remaining)}.`);
+      }
+
+      function answerNextSpecificEvent(eventType) {
+        const nextEvent = getNextMapEvent();
+        if (!nextEvent) {
+          speakText("I don't have enough information. Tell me which event was last.");
+          return;
+        }
+        if (nextEvent.nextEventType === eventType) {
+          const remaining = Math.max(0, nextEvent.nextEventTime - Date.now());
+          speakText(`${formatEventName(eventType)} is next, in ${formatDurationSpeech(remaining)}.`);
+        } else {
+          // It's the event after next — add one more hour
+          const remaining = Math.max(0, nextEvent.nextEventTime + 60 * 60 * 1000 - Date.now());
+          speakText(`${formatEventName(eventType)} is the event after next, roughly ${formatDurationSpeech(remaining)} from now.`);
+        }
+      }
+
+      const wantsNext = command.includes("next") || command.includes("when") || command.includes("upcoming") || command.includes("what is") || command.includes("whats");
+      const wantsEvent = command.includes("event") || command.includes("map");
+
+      if (cmdHasAirdrop(command) && wantsNext) {
+        answerNextSpecificEvent("airdrop");
         return;
       }
 
-      // ---- ALARM TOGGLE ----
-      if (cmdHasAlarm(command)) {
-        const turnOff = cmdHasStop(command) || command.includes("off") || command.includes("disable") || command.includes("mute");
-        alarmEnabled = !turnOff;
-        localStorage.setItem(ALARM_ENABLED_KEY, String(alarmEnabled));
-        updateAlarmButton();
-        speakText(`Alarm turned ${alarmEnabled ? "on" : "off"}.`);
+      if (cmdHasLockedCrate(command) && wantsNext) {
+        answerNextSpecificEvent("lockedcrate");
         return;
+      }
+
+      if ((wantsNext && wantsEvent) || command === "what is next" || command === "whats next" || command === "next event" || command === "when is next event") {
+        answerNextEvent();
+        return;
+      }
+
+      // ---- SET MAIN SERVER ----
+      const setMainMatch = command.match(/(?:set|make|use|track|switch|change|swap|move)\s+(?:the\s+)?(?:main\s+)?server(?:\s+to|\s+as|\s+on)?\s+([a-z0-9 _-]+)/i)
+        || command.match(/(?:set|make|use|track|switch|change|swap)\s+(?:the\s+)?main\s+server(?:\s+to|\s+as)?\s+([a-z0-9 _-]+)/i)
+        || command.match(/main\s+server(?:\s+to|\s+as|\s+is|\s+should be)?\s+([a-z0-9 _-]+)/i)
+        || command.match(/track\s+([a-z0-9 _-]+)\s+(?:as\s+)?(?:main\s+server)?/i)
+        || command.match(/(?:switch|change|swap|go)\s+(?:to\s+)?([a-z0-9 _-]+)/i);
+      if (setMainMatch) {
+        const candidate = findServerMention(setMainMatch[1]);
+        if (candidate) {
+          setMainServer(candidate);
+          return;
+        }
       }
 
       // ---- SPEECH TOGGLE ----
@@ -1883,7 +1868,8 @@ Wake phrase:
       }
 
       // ---- POP QUESTION ----
-      if (cmdHasPop(command) || isPopulationQuestion(command)) {
+      // Only answer pop if there's an explicit pop keyword, not just a server name mentioned
+      if (cmdHasPop(command) && isPopulationQuestion(command)) {
         answerServerPop(findServerMention(command));
         return;
       }
@@ -1906,6 +1892,7 @@ Wake phrase:
         { score: cmdHasLockedCrate(command) ? 2 : 0, action: () => setLastEvent("lockedcrate") },
         { score: cmdHasRefresh(command) ? 3 : 0, action: () => { refreshServers(); speakText("Refreshing server data."); } },
         { score: cmdHasTimer(command) ? 2 : 0, action: () => answerBothTimers() },
+        { score: (command.includes("next") || command.includes("event")) ? 2 : 0, action: () => { const ne = getNextMapEvent(); if (ne) { const r = Math.max(0, ne.nextEventTime - Date.now()); speakText(`Next event is ${formatEventName(ne.nextEventType)} in ${formatDurationSpeech(r)}.`); } else { answerServerPop(getMainServer()); } } },
       ];
 
       const best = scores.reduce((a, b) => b.score > a.score ? b : a, scores[0]);
@@ -1971,7 +1958,7 @@ Wake phrase:
         recognition.addEventListener("start", () => {
           recognitionActive = true;
           heardWakePhrase = false;
-          setListeningStatus("Voice commands are armed. Say hey Strayed.");
+          setListeningStatus("Voice commands are armed. Say hey Jarvis.");
         });
 
         recognition.addEventListener("result", (event) => {
@@ -2005,7 +1992,7 @@ Wake phrase:
           if (listeningEnabled && !manualStop) {
             heardWakePhrase = false;
             hideVoiceOrb(0);
-            setListeningStatus("Voice commands are armed. Say hey Strayed.");
+            setListeningStatus("Voice commands are armed. Say hey Jarvis.");
             recognition.start();
             return;
           }
@@ -2122,22 +2109,10 @@ Wake phrase:
       stopVaultTimer(false);
     }
 
-    function handleVaultAlarmToggle() {
-      vaultAlarmEnabled = !vaultAlarmEnabled;
-      localStorage.setItem(VAULT_ALARM_ENABLED_KEY, String(vaultAlarmEnabled));
-      updateVaultAlarmButton();
-    }
-
     function handleWakeLockToggle() {
       wakeLockWanted = !wakeLockWanted;
       localStorage.setItem(WAKE_LOCK_ENABLED_KEY, String(wakeLockWanted));
       syncWakeLock();
-    }
-
-    function handleAlarmToggle() {
-      alarmEnabled = !alarmEnabled;
-      localStorage.setItem(ALARM_ENABLED_KEY, String(alarmEnabled));
-      updateAlarmButton();
     }
 
     function handleStopTimer() {
@@ -2193,9 +2168,7 @@ Wake phrase:
     elements.setLastEventButton.addEventListener("click", handleLastEventSelection);
     elements.startVaultButton.addEventListener("click", handleVaultStart);
     elements.stopVaultButton.addEventListener("click", handleVaultStop);
-    elements.toggleVaultAlarmButton.addEventListener("click", handleVaultAlarmToggle);
     elements.setTimerButton.addEventListener("click", handleTimerStart);
-    elements.toggleAlarmButton.addEventListener("click", handleAlarmToggle);
     elements.stopTimerButton.addEventListener("click", handleStopTimer);
     elements.toggleWakeLockButton.addEventListener("click", handleWakeLockToggle);
     elements.voiceSelect.addEventListener("change", handleVoiceChange);
@@ -2204,10 +2177,8 @@ Wake phrase:
 
     updateSpeechButton();
     updateListeningButton();
-    updateAlarmButton();
-    updateVaultAlarmButton();
     updateWakeLockButton();
-    elements.wakePhrase.textContent = "Hey Strayed";
+    elements.wakePhrase.textContent = "Jarvis";
     elements.lastEventSelect.value = lastEventType || "airdrop";
     populateVoiceSelect();
     if ("speechSynthesis" in window) {
