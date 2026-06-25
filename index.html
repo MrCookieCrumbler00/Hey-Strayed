@@ -1,0 +1,2248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Crustacean Server Pop Tracker</title>
+  <style>
+    :root {
+      --bg-1: #08111f;
+      --bg-2: #11253d;
+      --panel: rgba(6, 17, 30, 0.82);
+      --panel-border: rgba(151, 194, 255, 0.2);
+      --text: #edf5ff;
+      --muted: #a8bdd6;
+      --accent: #7df9c1;
+      --accent-2: #54b8ff;
+      --danger: #ff8181;
+      --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+      color: var(--text);
+      background:
+        radial-gradient(circle at top, rgba(84, 184, 255, 0.14), transparent 32%),
+        radial-gradient(circle at bottom right, rgba(125, 249, 193, 0.12), transparent 24%),
+        linear-gradient(140deg, var(--bg-1), var(--bg-2));
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+
+    .card {
+      width: min(100%, 760px);
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      padding: 28px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+    }
+
+    .hero-grid {
+      display: grid;
+      grid-template-columns: 0.95fr 1.05fr;
+      gap: 18px;
+      margin-top: 24px;
+      align-items: start;
+    }
+
+    .column {
+      display: grid;
+      gap: 18px;
+    }
+
+    .panel {
+      padding: 20px;
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.045);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 1.05rem;
+      letter-spacing: 0.02em;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+
+    .panel-head h2 {
+      margin: 0;
+    }
+
+    .info-wrap {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .info-dot {
+      width: 28px;
+      height: 28px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border: 1px solid rgba(170, 216, 255, 0.2);
+      background: rgba(255, 255, 255, 0.05);
+      color: #dff1ff;
+      font-size: 0.95rem;
+      font-weight: 700;
+      cursor: default;
+      user-select: none;
+    }
+
+    .info-tip {
+      position: absolute;
+      top: calc(100% + 10px);
+      right: 0;
+      width: min(320px, 72vw);
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(7, 17, 31, 0.96);
+      border: 1px solid rgba(170, 216, 255, 0.2);
+      color: var(--muted);
+      font-size: 0.88rem;
+      line-height: 1.45;
+      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+      opacity: 0;
+      transform: translateY(-4px);
+      pointer-events: none;
+      transition: opacity 140ms ease, transform 140ms ease;
+      z-index: 10;
+      white-space: pre-line;
+    }
+
+    .info-wrap:hover .info-tip {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(2rem, 4vw, 3rem);
+      letter-spacing: 0.02em;
+    }
+
+    p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.5;
+    }
+
+    .controls {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 14px;
+      margin-top: 24px;
+    }
+
+    select,
+    button {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font: inherit;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.06);
+    }
+
+    select {
+      color: var(--text);
+      background-color: rgba(8, 17, 31, 0.95);
+    }
+
+    option {
+      color: var(--text);
+      background-color: #0d1a2b;
+    }
+
+    button {
+      width: auto;
+      cursor: pointer;
+      transition: transform 160ms ease, background 160ms ease;
+    }
+
+    button:hover {
+      transform: translateY(-1px);
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 16px;
+      margin-top: 24px;
+    }
+
+    .stat {
+      padding: 18px;
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .label {
+      color: var(--muted);
+      font-size: 0.92rem;
+      margin-bottom: 8px;
+    }
+
+    .value {
+      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-weight: 700;
+    }
+
+    .status {
+      margin-top: 18px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+    }
+
+    .status.error {
+      color: var(--danger);
+      border: 1px solid rgba(255, 129, 129, 0.24);
+    }
+
+    .footer {
+      margin-top: 18px;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .stack {
+      display: grid;
+      gap: 12px;
+      margin-top: 24px;
+    }
+
+    .compact-stack {
+      display: grid;
+      gap: 12px;
+    }
+
+    .input {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 14px;
+      padding: 14px 16px;
+      font: inherit;
+      color: var(--text);
+      background: rgba(8, 17, 31, 0.95);
+    }
+
+    .timer-visual {
+      position: relative;
+      display: grid;
+      place-items: center;
+      min-height: 240px;
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 50% 18%, rgba(95, 176, 255, 0.16), transparent 28%),
+        radial-gradient(circle at center, rgba(84, 184, 255, 0.08), transparent 54%),
+        linear-gradient(180deg, rgba(84, 184, 255, 0.08), rgba(255, 255, 255, 0.02));
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .timer-visual::before {
+      content: "";
+      position: absolute;
+      width: 188px;
+      height: 188px;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background:
+        conic-gradient(
+          from -90deg,
+          rgba(118, 204, 255, 1) 0deg,
+          rgba(79, 166, 255, 0.98) calc(var(--timer-progress, 100) * 3.6deg),
+          rgba(255, 255, 255, 0.08) calc(var(--timer-progress, 100) * 3.6deg),
+          rgba(255, 255, 255, 0.08) 360deg
+        );
+      box-shadow:
+        0 0 0 1px rgba(255, 255, 255, 0.06),
+        0 0 28px rgba(84, 184, 255, 0.18),
+        inset 0 0 18px rgba(120, 190, 255, 0.12);
+      transition: background 180ms linear, box-shadow 180ms linear;
+    }
+
+    .timer-visual::after {
+      content: "";
+      position: absolute;
+      width: 144px;
+      height: 144px;
+      border-radius: 50%;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background:
+        radial-gradient(circle at top, rgba(84, 184, 255, 0.08), transparent 55%),
+        rgba(5, 15, 27, 0.96);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.22);
+    }
+
+    .timer-core {
+      position: relative;
+      z-index: 1;
+      text-align: center;
+      display: grid;
+      gap: 4px;
+      width: 120px;
+    }
+
+    .timer-kicker {
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .timer-big {
+      font-size: clamp(2.4rem, 5vw, 3.6rem);
+      font-weight: 800;
+      line-height: 1;
+      text-shadow: 0 0 24px rgba(84, 184, 255, 0.16);
+    }
+
+    .timer-sub {
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: center;
+      max-width: 260px;
+      margin: 0 auto;
+    }
+
+    .detail-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .mini-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .single-stat {
+      margin-top: 0;
+      grid-template-columns: 1fr;
+    }
+
+    .voice-orb-wrap {
+      position: fixed;
+      inset: 0;
+      display: grid;
+      place-items: center;
+      pointer-events: none;
+      z-index: 30;
+      opacity: 0;
+      transition: opacity 180ms ease;
+    }
+
+    .voice-orb-wrap.visible {
+      opacity: 1;
+    }
+
+    .voice-orb {
+      width: 150px;
+      height: 150px;
+      border-radius: 50%;
+      position: relative;
+      display: grid;
+      place-items: center;
+      background:
+        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.3), transparent 20%),
+        radial-gradient(circle at center, rgba(100, 190, 255, 0.28), rgba(7, 17, 31, 0.92) 62%);
+      border: 1px solid rgba(170, 216, 255, 0.2);
+      box-shadow:
+        0 0 42px rgba(84, 184, 255, 0.2),
+        inset 0 0 26px rgba(125, 200, 255, 0.14);
+      backdrop-filter: blur(12px);
+      transform: scale(0.96);
+    }
+
+    .voice-orb::before,
+    .voice-orb::after {
+      content: "";
+      position: absolute;
+      inset: -14px;
+      border-radius: 50%;
+      border: 1px solid rgba(155, 215, 255, 0.18);
+      opacity: 0.72;
+    }
+
+    .voice-orb::after {
+      inset: -28px;
+      border-color: rgba(112, 186, 255, 0.14);
+    }
+
+    .voice-orb-wrap.listening .voice-orb {
+      animation: orb-listen 1.8s ease-in-out infinite;
+    }
+
+    .voice-orb-wrap.speaking .voice-orb {
+      animation: orb-talk 0.9s ease-in-out infinite;
+    }
+
+    .voice-orb-text {
+      position: relative;
+      z-index: 1;
+      font-size: 0.82rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: #e9f4ff;
+      text-shadow: 0 0 14px rgba(84, 184, 255, 0.24);
+    }
+
+    @keyframes orb-listen {
+      0%, 100% { transform: scale(0.96); box-shadow: 0 0 42px rgba(84, 184, 255, 0.2), inset 0 0 26px rgba(125, 200, 255, 0.14); }
+      50% { transform: scale(1.03); box-shadow: 0 0 58px rgba(84, 184, 255, 0.3), inset 0 0 34px rgba(125, 200, 255, 0.22); }
+    }
+
+    @keyframes orb-talk {
+      0%, 100% { transform: scale(0.95) translateY(0); border-radius: 50%; }
+      25% { transform: scale(1.05, 0.92) translateY(1px); border-radius: 46% 54% 50% 50%; }
+      50% { transform: scale(0.98, 1.06) translateY(-1px); border-radius: 54% 46% 48% 52%; }
+      75% { transform: scale(1.04, 0.94) translateY(1px); border-radius: 49% 51% 55% 45%; }
+    }
+
+    @media (max-width: 640px) {
+      .hero-grid,
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .controls {
+        grid-template-columns: 1fr;
+      }
+
+      button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="voice-orb-wrap" id="voiceOrbWrap" aria-hidden="true">
+    <div class="voice-orb">
+      <div class="voice-orb-text" id="voiceOrbText">Strayed</div>
+    </div>
+  </div>
+
+  <main class="card">
+    <h1>Server Pop Tracker</h1>
+    <p>Main server, timer, and event tracking stay up top so the important stuff is visible in one glance. Voice and extra detail live lower on the dashboard.</p>
+
+    <section class="hero-grid" aria-label="Main Dashboard">
+      <div class="column">
+        <section class="panel" aria-label="Main Server Controls">
+          <div class="panel-head">
+            <h2>Main Server</h2>
+            <div class="info-wrap">
+              <div class="info-dot">i</div>
+              <div class="info-tip">Shows the live pop for your selected main server.
+
+Voice:
+"what pop"
+"main server pop"
+"set main server to EU1"
+"refresh"</div>
+            </div>
+          </div>
+          <div class="controls">
+            <select id="mainServerSelect" aria-label="Choose the main server">
+              <option>Loading servers...</option>
+            </select>
+            <button id="refreshButton" type="button">Refresh now</button>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="label">Players Online</div>
+              <div class="value" id="playerCount">--</div>
+            </div>
+            <div class="stat">
+              <div class="label">Main Server</div>
+              <div class="value" id="mainServerName" style="font-size: 1rem; font-weight: 600;">--</div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel" aria-label="Map Event Tracker">
+          <div class="panel-head">
+            <h2>Map Events</h2>
+            <div class="info-wrap">
+              <div class="info-dot">i</div>
+              <div class="info-tip">Tracks the hourly map-event rotation from your main server reset timing.
+
+Voice:
+"airdrop was last"
+"locked crate was last"</div>
+            </div>
+          </div>
+          <div class="compact-stack">
+            <div class="status" id="eventStatus">Map event tracking is idle.</div>
+            <div class="controls">
+              <select id="lastEventSelect" aria-label="Choose the last map event">
+                <option value="airdrop">Airdrop was last</option>
+                <option value="lockedcrate">Locked crate was last</option>
+              </select>
+              <button id="setLastEventButton" type="button">Set last event</button>
+            </div>
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Last Event</div>
+                <div class="value" id="lastEventName" style="font-size: 1rem; font-weight: 600;">--</div>
+              </div>
+              <div class="stat">
+                <div class="label">Next Event</div>
+                <div class="value" id="nextEventName" style="font-size: 1rem; font-weight: 600;">--</div>
+              </div>
+              <div class="stat">
+                <div class="label">Next Event ETA</div>
+                <div class="value" id="nextEventEta" style="font-size: 1rem; font-weight: 600;">--</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div class="column">
+        <section class="panel" aria-label="Timer Tracker">
+          <div class="panel-head">
+            <h2>Lockedcrate Timer</h2>
+            <div class="info-wrap">
+              <div class="info-dot">i</div>
+              <div class="info-tip">Manual lockedcrate countdown. Default start is 15 minutes.
+
+Voice:
+"start locked crate timer"
+"locked crate timer"
+"how long left on locked crate"
+"stop timer"
+"alarm on"
+"alarm off"</div>
+            </div>
+          </div>
+          <div class="compact-stack">
+            <div class="timer-visual" id="timerVisual">
+              <div class="timer-core">
+                <div class="timer-kicker" id="timerLabelDisplay">Lockedcrate Timer</div>
+                <div class="timer-big" id="timerHeroRemaining">--</div>
+              </div>
+            </div>
+            <div class="timer-sub" id="timerHeroSubtext">Start the lockedcrate timer to see the countdown ring.</div>
+            <div class="status" id="timerStatus">No active timer.</div>
+            <div class="controls">
+              <input id="timerInput" class="input" type="text" placeholder="15:00" value="15:00">
+              <button id="setTimerButton" type="button">Start timer</button>
+            </div>
+            <div class="controls">
+              <button id="toggleAlarmButton" type="button">Alarm: On</button>
+              <button id="stopTimerButton" type="button">Stop timer</button>
+            </div>
+            <div class="stats">
+              <div class="stat">
+                <div class="label">Timer Remaining</div>
+                <div class="value" id="timerRemaining" style="font-size: 1rem; font-weight: 600;">--</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="panel">
+          <div class="panel-head">
+            <h2>Vault Tracker</h2>
+            <div class="info-wrap">
+              <div class="info-dot">i</div>
+              <div class="info-tip">Tracks a vault on the main server. Close time updates live with pop.
+
+Voice:
+"start vault timer"
+"stop vault timer"
+"what would the vault timer be"
+"how long left on vault"
+"vault alarm on"
+"vault alarm off"</div>
+            </div>
+          </div>
+          <div class="compact-stack">
+            <div class="status" id="vaultStatus">Vault timer is idle.</div>
+            <div class="controls">
+              <button id="startVaultButton" type="button">Start vault timer</button>
+              <button id="stopVaultButton" type="button">Stop vault timer</button>
+            </div>
+            <div class="controls">
+              <button id="toggleVaultAlarmButton" type="button">Vault Alarm: On</button>
+              <div class="status" id="vaultAlertStatus">Vault alerts follow the main server pop.</div>
+            </div>
+            <div class="stats single-stat">
+              <div class="stat">
+                <div class="label">Vault Remaining</div>
+                <div class="value" id="vaultRemaining" style="font-size: 1rem; font-weight: 600;">--</div>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </section>
+
+    <section class="detail-grid" aria-label="Detail Panels">
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Voice Controls</h2>
+          <div class="info-wrap">
+            <div class="info-dot">i</div>
+            <div class="info-tip">Controls the speaking voice and whether Strayed is listening.
+
+Voice:
+"speech on"
+"speech off"
+"voice commands on"
+"voice commands off"
+"keep awake on"
+"keep awake off"</div>
+          </div>
+        </div>
+        <div class="compact-stack">
+          <div class="controls" aria-label="Speech Controls">
+            <select id="voiceSelect" aria-label="Choose a voice">
+              <option>Loading voices...</option>
+            </select>
+            <button id="toggleSpeechButton" type="button">Speech: On</button>
+          </div>
+          <div class="controls" aria-label="Voice Command Controls">
+            <button id="toggleListeningButton" type="button">Voice Commands: Off</button>
+            <div class="status" id="listeningStatus">Voice commands are idle.</div>
+          </div>
+          <div class="controls" aria-label="Wake Lock Controls">
+            <button id="toggleWakeLockButton" type="button">Keep Awake: Off</button>
+            <div class="status">Keeps the screen awake while this page stays open and visible.</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-head">
+          <h2>Voice Detail</h2>
+          <div class="info-wrap">
+            <div class="info-dot">i</div>
+            <div class="info-tip">Shows what Strayed last heard and the current wake phrase.
+
+Wake phrase:
+"Hey Strayed"</div>
+          </div>
+        </div>
+        <div class="stats" aria-label="Voice Debug">
+          <div class="stat">
+            <div class="label">Last Heard</div>
+            <div class="value" id="lastHeard" style="font-size: 1rem; font-weight: 500;">Nothing yet</div>
+          </div>
+          <div class="stat">
+            <div class="label">Wake Phrase</div>
+            <div class="value" id="wakePhrase" style="font-size: 1rem; font-weight: 500;">Hey Strayed</div>
+          </div>
+        </div>
+      </section>
+    </section>
+
+    <div class="status" id="status">Fetching server data...</div>
+    <div class="footer" id="lastUpdated">Last updated: --</div>
+  </main>
+
+  <script>
+    const API_URL = "https://api.crustaceaninteractive.com/crustacean/v2/public/get-servers";
+    const POLL_INTERVAL_MS = 15000;
+    const STORAGE_KEY = "crustacean-selected-server";
+    const MAIN_SERVER_KEY = "crustacean-main-server";
+    const SPEECH_ENABLED_KEY = "crustacean-speech-enabled";
+    const VOICE_KEY = "crustacean-selected-voice";
+    const LISTENING_ENABLED_KEY = "crustacean-listening-enabled";
+    const ALARM_ENABLED_KEY = "crustacean-alarm-enabled";
+    const WAKE_PHRASE = "hey strayed";
+    const LAST_EVENT_KEY = "crustacean-last-event";
+    const LAST_EVENT_TIME_KEY = "crustacean-last-event-time";
+    const TIMER_TARGET_KEY = "crustacean-timer-target";
+    const TIMER_LABEL_KEY = "crustacean-timer-label";
+    const TIMER_DURATION_KEY = "crustacean-timer-duration";
+    const VAULT_ACTIVE_KEY = "crustacean-vault-active";
+    const VAULT_OPENED_AT_KEY = "crustacean-vault-opened-at";
+    const VAULT_ALARM_ENABLED_KEY = "crustacean-vault-alarm-enabled";
+    const WAKE_LOCK_ENABLED_KEY = "crustacean-wake-lock-enabled";
+    const WAKE_PHRASE_VARIANTS = [
+      "hey strayed",
+      "hey steight",
+      "hey straight",
+      "hey strait",
+      "hey strade",
+      "hey stray",
+      "hey strayd",
+      "hey stradee",
+      "hey strady",
+      "hey steyed",
+      "hey stayed"
+    ];
+    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+    const elements = {
+      mainServerSelect: document.getElementById("mainServerSelect"),
+      refreshButton: document.getElementById("refreshButton"),
+      voiceSelect: document.getElementById("voiceSelect"),
+      toggleSpeechButton: document.getElementById("toggleSpeechButton"),
+      toggleListeningButton: document.getElementById("toggleListeningButton"),
+      toggleWakeLockButton: document.getElementById("toggleWakeLockButton"),
+      listeningStatus: document.getElementById("listeningStatus"),
+      lastHeard: document.getElementById("lastHeard"),
+      wakePhrase: document.getElementById("wakePhrase"),
+      lastEventSelect: document.getElementById("lastEventSelect"),
+      setLastEventButton: document.getElementById("setLastEventButton"),
+      lastEventName: document.getElementById("lastEventName"),
+      nextEventName: document.getElementById("nextEventName"),
+      nextEventEta: document.getElementById("nextEventEta"),
+      eventStatus: document.getElementById("eventStatus"),
+      startVaultButton: document.getElementById("startVaultButton"),
+      stopVaultButton: document.getElementById("stopVaultButton"),
+      toggleVaultAlarmButton: document.getElementById("toggleVaultAlarmButton"),
+      vaultStatus: document.getElementById("vaultStatus"),
+      vaultAlertStatus: document.getElementById("vaultAlertStatus"),
+      vaultRemaining: document.getElementById("vaultRemaining"),
+      timerInput: document.getElementById("timerInput"),
+      setTimerButton: document.getElementById("setTimerButton"),
+      toggleAlarmButton: document.getElementById("toggleAlarmButton"),
+      stopTimerButton: document.getElementById("stopTimerButton"),
+      timerVisual: document.getElementById("timerVisual"),
+      timerLabelDisplay: document.getElementById("timerLabelDisplay"),
+      timerHeroRemaining: document.getElementById("timerHeroRemaining"),
+      timerHeroSubtext: document.getElementById("timerHeroSubtext"),
+      voiceOrbWrap: document.getElementById("voiceOrbWrap"),
+      voiceOrbText: document.getElementById("voiceOrbText"),
+      timerStatus: document.getElementById("timerStatus"),
+      timerRemaining: document.getElementById("timerRemaining"),
+      playerCount: document.getElementById("playerCount"),
+      mainServerName: document.getElementById("mainServerName"),
+      status: document.getElementById("status"),
+      lastUpdated: document.getElementById("lastUpdated")
+    };
+
+    let pollTimer;
+    let servers = [];
+    let availableVoices = [];
+    let speechEnabled = localStorage.getItem(SPEECH_ENABLED_KEY) !== "false";
+    let listeningEnabled = localStorage.getItem(LISTENING_ENABLED_KEY) === "true";
+    let alarmEnabled = localStorage.getItem(ALARM_ENABLED_KEY) !== "false";
+    let vaultAlarmEnabled = localStorage.getItem(VAULT_ALARM_ENABLED_KEY) !== "false";
+    let wakeLockWanted = localStorage.getItem(WAKE_LOCK_ENABLED_KEY) === "true";
+    let recognition = null;
+    let recognitionActive = false;
+    let manualStop = false;
+    let heardWakePhrase = false;
+    let microphoneStream = null;
+    let mainServerName = localStorage.getItem(MAIN_SERVER_KEY) || "";
+    let mainServerPreviousPlayerCount = null;
+    let lastEventType = localStorage.getItem(LAST_EVENT_KEY) || "";
+    let lastEventObservedAt = Number(localStorage.getItem(LAST_EVENT_TIME_KEY) || 0);
+    let eventReminderKey = "";
+    let timerTargetMs = Number(localStorage.getItem(TIMER_TARGET_KEY) || 0);
+    let timerLabel = localStorage.getItem(TIMER_LABEL_KEY) || "";
+    let timerDurationMs = Number(localStorage.getItem(TIMER_DURATION_KEY) || 0);
+    let vaultActive = localStorage.getItem(VAULT_ACTIVE_KEY) === "true";
+    let vaultOpenedAtMs = Number(localStorage.getItem(VAULT_OPENED_AT_KEY) || 0);
+    let vaultFiveMinuteWarned = false;
+    let vaultClosedAnnounced = false;
+    let eventTicker;
+    let timerTicker;
+    let orbHideTimer;
+    let wakeLockSentinel = null;
+
+    function setStatus(message, isError = false) {
+      elements.status.textContent = message;
+      elements.status.classList.toggle("error", isError);
+    }
+
+    function updateSpeechButton() {
+      elements.toggleSpeechButton.textContent = `Speech: ${speechEnabled ? "On" : "Off"}`;
+    }
+
+    function setListeningStatus(message, isError = false) {
+      elements.listeningStatus.textContent = message;
+      elements.listeningStatus.classList.toggle("error", isError);
+    }
+
+    function setEventStatus(message, isError = false) {
+      elements.eventStatus.textContent = message;
+      elements.eventStatus.classList.toggle("error", isError);
+    }
+
+    function setTimerStatus(message, isError = false) {
+      elements.timerStatus.textContent = message;
+      elements.timerStatus.classList.toggle("error", isError);
+    }
+
+    function setVaultStatus(message, isError = false) {
+      elements.vaultStatus.textContent = message;
+      elements.vaultStatus.classList.toggle("error", isError);
+    }
+
+    function setVaultAlertStatus(message, isError = false) {
+      elements.vaultAlertStatus.textContent = message;
+      elements.vaultAlertStatus.classList.toggle("error", isError);
+    }
+
+    function updateListeningButton() {
+      elements.toggleListeningButton.textContent = `Voice Commands: ${listeningEnabled ? "On" : "Off"}`;
+    }
+
+    function updateAlarmButton() {
+      elements.toggleAlarmButton.textContent = `Alarm: ${alarmEnabled ? "On" : "Off"}`;
+    }
+
+    function updateVaultAlarmButton() {
+      elements.toggleVaultAlarmButton.textContent = `Vault Alarm: ${vaultAlarmEnabled ? "On" : "Off"}`;
+      setVaultAlertStatus(
+        vaultAlarmEnabled
+          ? "Vault alerts follow the main server pop."
+          : "Vault alarm sounds and voice alerts are off."
+      );
+    }
+
+    function updateWakeLockButton() {
+      const supported = "wakeLock" in navigator;
+      if (!supported) {
+        elements.toggleWakeLockButton.textContent = "Keep Awake: Unsupported";
+        elements.toggleWakeLockButton.disabled = true;
+        return;
+      }
+
+      elements.toggleWakeLockButton.disabled = false;
+      elements.toggleWakeLockButton.textContent = `Keep Awake: ${wakeLockSentinel ? "On" : "Off"}`;
+    }
+
+    async function requestWakeLock() {
+      if (!("wakeLock" in navigator) || document.visibilityState !== "visible") {
+        updateWakeLockButton();
+        return false;
+      }
+
+      try {
+        wakeLockSentinel = await navigator.wakeLock.request("screen");
+        wakeLockSentinel.addEventListener("release", () => {
+          wakeLockSentinel = null;
+          updateWakeLockButton();
+        });
+        updateWakeLockButton();
+        return true;
+      } catch {
+        wakeLockSentinel = null;
+        updateWakeLockButton();
+        return false;
+      }
+    }
+
+    async function releaseWakeLock() {
+      if (wakeLockSentinel) {
+        await wakeLockSentinel.release();
+        wakeLockSentinel = null;
+      }
+      updateWakeLockButton();
+    }
+
+    async function syncWakeLock() {
+      if (wakeLockWanted) {
+        await requestWakeLock();
+      } else {
+        await releaseWakeLock();
+      }
+    }
+
+    function showVoiceOrb(mode, label) {
+      clearTimeout(orbHideTimer);
+      elements.voiceOrbWrap.classList.add("visible");
+      elements.voiceOrbWrap.classList.toggle("listening", mode === "listening");
+      elements.voiceOrbWrap.classList.toggle("speaking", mode === "speaking");
+      elements.voiceOrbText.textContent = label || "Strayed";
+    }
+
+    function hideVoiceOrb(delayMs = 250) {
+      clearTimeout(orbHideTimer);
+      orbHideTimer = setTimeout(() => {
+        elements.voiceOrbWrap.classList.remove("visible", "listening", "speaking");
+        elements.voiceOrbText.textContent = "Strayed";
+      }, delayMs);
+    }
+
+    async function getMicrophonePermissionState() {
+      if (!navigator.permissions?.query) {
+        return "unknown";
+      }
+
+      try {
+        const result = await navigator.permissions.query({ name: "microphone" });
+        return result.state;
+      } catch {
+        return "unknown";
+      }
+    }
+
+    async function ensureMicrophoneAccess() {
+      if (microphoneStream) {
+        return true;
+      }
+
+      if (!navigator.mediaDevices?.getUserMedia) {
+        return false;
+      }
+
+      try {
+        microphoneStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        return true;
+      } catch {
+        microphoneStream = null;
+        return false;
+      }
+    }
+
+    function releaseMicrophoneAccess() {
+      if (!microphoneStream) {
+        return;
+      }
+
+      microphoneStream.getTracks().forEach((track) => track.stop());
+      microphoneStream = null;
+    }
+
+    function setLastHeard(message) {
+      elements.lastHeard.textContent = message || "Nothing yet";
+    }
+
+    function findWakePhrase(normalizedTranscript) {
+      for (const variant of WAKE_PHRASE_VARIANTS) {
+        const index = normalizedTranscript.indexOf(variant);
+        if (index !== -1) {
+          return { variant, index };
+        }
+      }
+
+      const compactTranscript = normalizedTranscript.replace(/[^a-z0-9]/g, "");
+      for (const variant of WAKE_PHRASE_VARIANTS) {
+        const compactVariant = variant.replace(/[^a-z0-9]/g, "");
+        const compactIndex = compactTranscript.indexOf(compactVariant);
+        if (compactIndex !== -1) {
+          return { variant, index: normalizedTranscript.indexOf("hey") };
+        }
+      }
+
+      return null;
+    }
+
+    function updateServerDetails(server) {
+      if (!server) {
+        elements.playerCount.textContent = "--";
+        return;
+      }
+
+      elements.playerCount.textContent = String(server.playerCount);
+    }
+
+    function getMainServerName() {
+      return mainServerName || localStorage.getItem(MAIN_SERVER_KEY) || "";
+    }
+
+    function updateMainServerDisplay() {
+      const currentMainServerName = getMainServerName();
+      const mainServer = servers.find((server) => server.name === currentMainServerName) || null;
+      elements.mainServerName.textContent = mainServer ? mainServer.name : "--";
+      if (mainServer) {
+        elements.mainServerSelect.value = mainServer.name;
+      }
+    }
+
+    function formatDuration(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+
+      if (hours > 0) {
+        return `${hours}h ${minutes}m ${seconds}s`;
+      }
+
+      if (minutes > 0) {
+        return `${minutes}m ${seconds}s`;
+      }
+
+      return `${seconds}s`;
+    }
+
+    function formatDurationSpeech(ms) {
+      const totalSeconds = Math.max(0, Math.floor(ms / 1000));
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      const parts = [];
+
+      if (hours) {
+        parts.push(`${hours} hour${hours === 1 ? "" : "s"}`);
+      }
+      if (minutes) {
+        parts.push(`${minutes} minute${minutes === 1 ? "" : "s"}`);
+      }
+      if (seconds || !parts.length) {
+        parts.push(`${seconds} second${seconds === 1 ? "" : "s"}`);
+      }
+
+      return parts.join(" ");
+    }
+
+    function getLockedcrateRemainingMs() {
+      return timerTargetMs ? Math.max(0, timerTargetMs - Date.now()) : 0;
+    }
+
+    function getVaultRemainingMs() {
+      const mainServer = getMainServer();
+      if (!vaultActive || !vaultOpenedAtMs || !mainServer) {
+        return 0;
+      }
+
+      const durationMs = getVaultDurationMs(mainServer);
+      return Math.max(0, (vaultOpenedAtMs + durationMs) - Date.now());
+    }
+
+    function updateLastUpdated() {
+      const timestamp = new Date().toLocaleTimeString();
+      elements.lastUpdated.textContent = `Last updated: ${timestamp}`;
+    }
+
+    function populateVoiceSelect() {
+      availableVoices = window.speechSynthesis?.getVoices?.() ?? [];
+      const savedVoice = localStorage.getItem(VOICE_KEY) || "";
+
+      elements.voiceSelect.innerHTML = "";
+
+      if (!availableVoices.length) {
+        const option = document.createElement("option");
+        option.textContent = "Default browser voice";
+        option.value = "";
+        elements.voiceSelect.appendChild(option);
+        return;
+      }
+
+      const defaultOption = document.createElement("option");
+      defaultOption.value = "";
+      defaultOption.textContent = "Default browser voice";
+      elements.voiceSelect.appendChild(defaultOption);
+
+      availableVoices.forEach((voice) => {
+        const option = document.createElement("option");
+        option.value = voice.name;
+        option.textContent = `${voice.name} (${voice.lang})`;
+        option.selected = voice.name === savedVoice;
+        elements.voiceSelect.appendChild(option);
+      });
+
+      if (savedVoice && !availableVoices.some((voice) => voice.name === savedVoice)) {
+        localStorage.removeItem(VOICE_KEY);
+        elements.voiceSelect.value = "";
+      }
+    }
+
+    function getSelectedVoice() {
+      const selectedName = elements.voiceSelect.value;
+      return availableVoices.find((voice) => voice.name === selectedName) || null;
+    }
+
+    function createUtterance(message) {
+      if (!speechEnabled || !("speechSynthesis" in window) || !message) {
+        return null;
+      }
+
+      const utterance = new SpeechSynthesisUtterance(message);
+      const selectedVoice = getSelectedVoice();
+
+      if (selectedVoice) {
+        utterance.voice = selectedVoice;
+        utterance.lang = selectedVoice.lang;
+      }
+
+      utterance.addEventListener("start", () => {
+        showVoiceOrb("speaking", "Strayed");
+      });
+
+      utterance.addEventListener("end", () => {
+        hideVoiceOrb(180);
+      });
+
+      return utterance;
+    }
+
+    function speakPlayerCount(server) {
+      if (!server) {
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      const utterance = createUtterance(`${server.name} now has ${server.playerCount} players online.`);
+      if (!utterance) {
+        return;
+      }
+
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function speakText(message) {
+      const utterance = createUtterance(message);
+      if (!utterance) {
+        return;
+      }
+
+      window.speechSynthesis.cancel();
+      window.speechSynthesis.speak(utterance);
+    }
+
+    function normalizeName(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9]/g, "");
+    }
+
+    function tokenize(value) {
+      return String(value || "")
+        .toLowerCase()
+        .replace(/[^a-z0-9\s]/g, " ")
+        .split(/\s+/)
+        .filter(Boolean);
+    }
+
+    function findServerBySpokenName(rawName) {
+      const normalizedQuery = normalizeName(rawName);
+
+      return servers.find((server) => normalizeName(server.name) === normalizedQuery)
+        || servers.find((server) => normalizeName(server.name).includes(normalizedQuery))
+        || null;
+    }
+
+    function findServerMention(command) {
+      const directServer = findServerBySpokenName(command);
+      if (directServer) {
+        return directServer;
+      }
+
+      const currentMainServer = servers.find((server) => server.name === getMainServerName()) || null;
+      const tokens = tokenize(command);
+
+      if (!tokens.length) {
+        return currentMainServer;
+      }
+
+      if (command.includes("main server") || command.includes("tracked server") || command.includes("default server")) {
+        return currentMainServer;
+      }
+
+      if (command.includes("current server") || command.includes("selected server") || command.includes("this server") || command.includes("my server")) {
+        return currentMainServer;
+      }
+
+      for (const server of servers) {
+        const normalizedServerName = normalizeName(server.name);
+        if (tokens.some((token) => normalizedServerName.includes(normalizeName(token)))) {
+          return server;
+        }
+      }
+
+      const joinedTail = tokens.slice(-2).join("");
+      if (joinedTail) {
+        return servers.find((server) => normalizeName(server.name).includes(joinedTail)) || currentMainServer;
+      }
+
+      return currentMainServer;
+    }
+
+    function isPopulationQuestion(command) {
+      const tokens = tokenize(command);
+      const hasPopWord = tokens.some((token) => ["pop", "population", "players", "player", "count", "online"].includes(token));
+      const hasQuestionWord = tokens.some((token) => ["what", "whats", "is", "how", "many", "tell"].includes(token));
+      const hasServerReference = command.includes("server") || command.includes("eu") || command.includes("na") || /\d/.test(command);
+
+      return hasPopWord || (hasQuestionWord && hasServerReference);
+    }
+
+    function getMainServer() {
+      return servers.find((server) => server.name === getMainServerName()) || null;
+    }
+
+    function getVaultDurationMs(server) {
+      const pop = Number(server?.playerCount || 0);
+      const minutes = Math.max(0, 60 - (0.4 * pop));
+      return minutes * 60 * 1000;
+    }
+
+    function answerServerPop(server) {
+      if (!server) {
+        setListeningStatus("I heard the command, but I couldn't match that server name.", true);
+        speakText("I couldn't find that server.");
+        return;
+      }
+
+      updateServerDetails(server);
+      setStatus(`Showing live population for ${server.name}.`);
+      setListeningStatus(`Heard command for ${server.name}. Answered with its live player count.`);
+      speakText(`${server.name} currently has ${server.playerCount} players online.`);
+    }
+
+    function answerLockedcrateTimer() {
+      const remaining = getLockedcrateRemainingMs();
+      if (!remaining) {
+        speakText("There is no active lockedcrate timer.");
+        return;
+      }
+
+      speakText(`Lockedcrate timer has ${formatDurationSpeech(remaining)} left.`);
+    }
+
+    function answerVaultTimer() {
+      const remaining = getVaultRemainingMs();
+      const mainServer = getMainServer();
+      if (!remaining || !mainServer) {
+        speakText("There is no active vault timer.");
+        return;
+      }
+
+      speakText(`Vault timer on ${mainServer.name} has ${formatDurationSpeech(remaining)} left.`);
+    }
+
+    function answerBothTimers() {
+      const lockedRemaining = getLockedcrateRemainingMs();
+      const vaultRemaining = getVaultRemainingMs();
+      const parts = [];
+
+      if (lockedRemaining) {
+        parts.push(`Lockedcrate timer has ${formatDurationSpeech(lockedRemaining)} left`);
+      }
+      if (vaultRemaining) {
+        parts.push(`Vault timer has ${formatDurationSpeech(vaultRemaining)} left`);
+      }
+
+      if (!parts.length) {
+        speakText("There are no active timers right now.");
+        return;
+      }
+
+      speakText(parts.join(". ") + ".");
+    }
+
+    function answerVaultDurationEstimate() {
+      const mainServer = getMainServer();
+      if (!mainServer) {
+        speakText("Set a main server first so I can calculate the vault timer.");
+        return;
+      }
+
+      const durationMs = getVaultDurationMs(mainServer);
+      speakText(`With ${mainServer.playerCount} pop on ${mainServer.name}, the vault timer would be ${formatDurationSpeech(durationMs)}.`);
+    }
+
+    function getHourlyEventAnchor(server) {
+      if (!server?.wipeEpoch) {
+        return null;
+      }
+
+      return Number(server.wipeEpoch) * 1000 + 60 * 60 * 1000;
+    }
+
+    function getOppositeEvent(eventType) {
+      return eventType === "airdrop" ? "lockedcrate" : "airdrop";
+    }
+
+    function formatEventName(eventType) {
+      return eventType === "lockedcrate" ? "Locked crate" : eventType === "airdrop" ? "Airdrop" : "--";
+    }
+
+    function getNextMapEvent() {
+      const mainServer = getMainServer();
+      const anchorMs = getHourlyEventAnchor(mainServer);
+      if (!mainServer || !anchorMs || !lastEventType) {
+        return null;
+      }
+
+      const now = Date.now();
+      const referenceTime = lastEventObservedAt || now;
+      const nextEventTime = now < anchorMs
+        ? anchorMs
+        : anchorMs + (Math.floor((now - anchorMs) / (60 * 60 * 1000)) + 1) * 60 * 60 * 1000;
+      const futureSteps = Math.max(1, Math.round((nextEventTime - referenceTime) / (60 * 60 * 1000)));
+      const nextEventType = futureSteps % 2 === 1 ? getOppositeEvent(lastEventType) : lastEventType;
+
+      return {
+        server: mainServer,
+        nextEventType,
+        nextEventTime
+      };
+    }
+
+    function updateEventDisplay() {
+      const mainServer = getMainServer();
+      const nextEvent = getNextMapEvent();
+
+      elements.lastEventName.textContent = formatEventName(lastEventType);
+
+      if (!mainServer) {
+        elements.nextEventName.textContent = "--";
+        elements.nextEventEta.textContent = "--";
+        setEventStatus("Set a main server first so map-event tracking knows which reset time to follow.", true);
+        return;
+      }
+
+      if (!lastEventType) {
+        elements.nextEventName.textContent = "--";
+        elements.nextEventEta.textContent = "--";
+        setEventStatus("Tell me which map event was last once, and I will keep the rotation going from there.");
+        return;
+      }
+
+      if (!nextEvent) {
+        elements.nextEventName.textContent = "--";
+        elements.nextEventEta.textContent = "--";
+        setEventStatus("Waiting for enough reset information to calculate the next map event.", true);
+        return;
+      }
+
+      const remaining = Math.max(0, nextEvent.nextEventTime - Date.now());
+      elements.nextEventName.textContent = formatEventName(nextEvent.nextEventType);
+      elements.nextEventEta.textContent = formatDuration(remaining);
+      setEventStatus(`${formatEventName(nextEvent.nextEventType)} is the next map event on ${mainServer.name}.`);
+
+      const reminderWindow = remaining <= 5 * 60 * 1000 ? "5m"
+        : remaining <= 10 * 60 * 1000 ? "10m"
+        : remaining <= 15 * 60 * 1000 ? "15m"
+        : "";
+      const nextReminderKey = reminderWindow ? `${nextEvent.nextEventType}-${nextEvent.nextEventTime}-${reminderWindow}` : "";
+
+      if (nextReminderKey && nextReminderKey !== eventReminderKey) {
+        eventReminderKey = nextReminderKey;
+        const spokenTime = reminderWindow === "5m" ? "5 minutes" : reminderWindow === "10m" ? "10 minutes" : "15 minutes";
+        speakText(`${formatEventName(nextEvent.nextEventType)} arrives in ${spokenTime}.`);
+      }
+
+      if (!reminderWindow) {
+        eventReminderKey = "";
+      }
+    }
+
+    function setLastEvent(eventType, shouldSpeakConfirmation = true) {
+      lastEventType = eventType;
+      lastEventObservedAt = Date.now();
+      localStorage.setItem(LAST_EVENT_KEY, eventType);
+      localStorage.setItem(LAST_EVENT_TIME_KEY, String(lastEventObservedAt));
+      elements.lastEventSelect.value = eventType;
+      eventReminderKey = "";
+      updateEventDisplay();
+
+      if (shouldSpeakConfirmation) {
+        speakText(`${formatEventName(eventType)} was set as the last map event. I will track what comes next.`);
+      }
+    }
+
+    function playAlarm(isEnabled = true) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!isEnabled) {
+        return;
+      }
+
+      if (!AudioContextClass) {
+        speakText("Timer finished.");
+        return;
+      }
+
+      const context = new AudioContextClass();
+      const now = context.currentTime;
+      [0, 0.25, 0.5].forEach((offset) => {
+        const oscillator = context.createOscillator();
+        const gain = context.createGain();
+        oscillator.type = "sine";
+        oscillator.frequency.setValueAtTime(880, now + offset);
+        gain.gain.setValueAtTime(0.001, now + offset);
+        gain.gain.exponentialRampToValueAtTime(0.2, now + offset + 0.02);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + offset + 0.18);
+        oscillator.connect(gain);
+        gain.connect(context.destination);
+        oscillator.start(now + offset);
+        oscillator.stop(now + offset + 0.2);
+      });
+    }
+
+    function parseDurationToMs(input) {
+      const normalized = String(input || "").toLowerCase();
+      let totalMs = 0;
+      const hourMatch = normalized.match(/(\d+)\s*(?:hour|hours|hr|hrs|h)\b/);
+      const minuteMatch = normalized.match(/(\d+)\s*(?:minute|minutes|min|mins|m)\b/);
+      const secondMatch = normalized.match(/(\d+)\s*(?:second|seconds|sec|secs|s)\b/);
+      const compactMatch = normalized.match(/(\d+)\s*:\s*(\d{1,2})(?:\s*:\s*(\d{1,2}))?/);
+
+      if (compactMatch) {
+        if (compactMatch[3]) {
+          totalMs += Number(compactMatch[1]) * 3600000;
+          totalMs += Number(compactMatch[2]) * 60000;
+          totalMs += Number(compactMatch[3]) * 1000;
+        } else {
+          totalMs += Number(compactMatch[1]) * 60000;
+          totalMs += Number(compactMatch[2]) * 1000;
+        }
+      }
+
+      if (hourMatch) {
+        totalMs += Number(hourMatch[1]) * 3600000;
+      }
+      if (minuteMatch) {
+        totalMs += Number(minuteMatch[1]) * 60000;
+      }
+      if (secondMatch) {
+        totalMs += Number(secondMatch[1]) * 1000;
+      }
+
+      if (!totalMs) {
+        const plainNumberMatch = normalized.match(/(\d+)(?:\s+(\d+))?/);
+        if (plainNumberMatch && normalized.includes("timer")) {
+          totalMs += Number(plainNumberMatch[1]) * 60000;
+          if (plainNumberMatch[2]) {
+            totalMs += Number(plainNumberMatch[2]) * 1000;
+          }
+        }
+      }
+
+      return totalMs;
+    }
+
+    function updateTimerDisplay() {
+      if (!timerTargetMs) {
+        elements.timerRemaining.textContent = "--";
+        elements.timerLabelDisplay.textContent = "Lockedcrate Timer";
+        elements.timerHeroRemaining.textContent = "--";
+        elements.timerHeroSubtext.textContent = "Start the lockedcrate timer to see the countdown ring.";
+        elements.timerVisual.style.setProperty("--timer-progress", "100");
+        setTimerStatus("No active lockedcrate timer.");
+        return;
+      }
+
+      const remaining = timerTargetMs - Date.now();
+      if (remaining <= 0) {
+        elements.timerRemaining.textContent = "0s";
+        elements.timerLabelDisplay.textContent = timerLabel || "Lockedcrate Timer";
+        elements.timerHeroRemaining.textContent = "0s";
+        elements.timerHeroSubtext.textContent = "Finished";
+        elements.timerVisual.style.setProperty("--timer-progress", "0");
+        setTimerStatus("Lockedcrate timer finished.");
+        speakText(`${timerLabel || "Lockedcrate Timer"} is finished.`);
+        playAlarm();
+        timerTargetMs = 0;
+        timerLabel = "";
+        timerDurationMs = 0;
+        localStorage.removeItem(TIMER_TARGET_KEY);
+        localStorage.removeItem(TIMER_LABEL_KEY);
+        localStorage.removeItem(TIMER_DURATION_KEY);
+        return;
+      }
+
+      const remainingRatio = timerDurationMs > 0
+        ? Math.min(1, Math.max(0, remaining / timerDurationMs))
+        : 0;
+      elements.timerVisual.style.setProperty("--timer-progress", `${Math.round(remainingRatio * 100)}`);
+      elements.timerLabelDisplay.textContent = timerLabel || "Lockedcrate Timer";
+      elements.timerHeroRemaining.textContent = formatDuration(remaining);
+      elements.timerHeroSubtext.textContent = alarmEnabled
+        ? "Alarm will sound when this ends."
+        : "Alarm is off for this timer.";
+      elements.timerRemaining.textContent = formatDuration(remaining);
+      setTimerStatus(`${timerLabel || "Lockedcrate Timer"} is running.`);
+    }
+
+    function startTimer(durationMs, spokenLabel, shouldSpeakConfirmation = true) {
+      if (!durationMs) {
+        setTimerStatus("I could not understand that timer length.", true);
+        if (shouldSpeakConfirmation) {
+          speakText("I could not understand that timer length.");
+        }
+        return;
+      }
+
+      timerTargetMs = Date.now() + durationMs;
+      timerLabel = spokenLabel || "Lockedcrate Timer";
+      timerDurationMs = durationMs;
+      localStorage.setItem(TIMER_TARGET_KEY, String(timerTargetMs));
+      localStorage.setItem(TIMER_LABEL_KEY, timerLabel);
+      localStorage.setItem(TIMER_DURATION_KEY, String(timerDurationMs));
+      updateTimerDisplay();
+
+      if (shouldSpeakConfirmation) {
+        speakText(`${timerLabel} started for ${formatDurationSpeech(durationMs)}.`);
+      }
+    }
+
+    function stopTimer(shouldSpeakConfirmation = true) {
+      timerTargetMs = 0;
+      timerLabel = "";
+      timerDurationMs = 0;
+      localStorage.removeItem(TIMER_TARGET_KEY);
+      localStorage.removeItem(TIMER_LABEL_KEY);
+      localStorage.removeItem(TIMER_DURATION_KEY);
+      updateTimerDisplay();
+      if (shouldSpeakConfirmation) {
+        speakText("Lockedcrate timer stopped.");
+      }
+    }
+
+    function updateVaultDisplay() {
+      const mainServer = getMainServer();
+
+      if (!vaultActive || !vaultOpenedAtMs) {
+        elements.vaultRemaining.textContent = "--";
+        setVaultStatus("Vault timer is idle.");
+        return;
+      }
+
+      if (!mainServer) {
+        elements.vaultRemaining.textContent = "--";
+        setVaultStatus("Vault timer is waiting for main server data.", true);
+        return;
+      }
+
+      const durationMs = getVaultDurationMs(mainServer);
+      const closeAtMs = vaultOpenedAtMs + durationMs;
+      const remaining = closeAtMs - Date.now();
+
+      if (remaining <= 0) {
+        elements.vaultRemaining.textContent = "0s";
+        setVaultStatus(`Vault on ${mainServer.name} should be closed now.`);
+        if (!vaultClosedAnnounced) {
+          vaultClosedAnnounced = true;
+          if (vaultAlarmEnabled) {
+            speakText(`Vault on ${mainServer.name} should be closed now.`);
+          }
+          playAlarm(vaultAlarmEnabled);
+        }
+        vaultActive = false;
+        vaultOpenedAtMs = 0;
+        localStorage.setItem(VAULT_ACTIVE_KEY, "false");
+        localStorage.removeItem(VAULT_OPENED_AT_KEY);
+        return;
+      }
+
+      elements.vaultRemaining.textContent = formatDuration(remaining);
+      setVaultStatus(`Vault on ${mainServer.name} closes in ${formatDuration(remaining)} and updates with live pop.`);
+
+      if (remaining <= 5 * 60 * 1000 && !vaultFiveMinuteWarned) {
+        vaultFiveMinuteWarned = true;
+        if (vaultAlarmEnabled) {
+          speakText(`Vault on ${mainServer.name} closes in 5 minutes.`);
+        }
+      }
+
+      if (remaining > 5 * 60 * 1000) {
+        vaultFiveMinuteWarned = false;
+      }
+    }
+
+    function startVaultTimer(shouldSpeakConfirmation = true) {
+      const mainServer = getMainServer();
+      if (!mainServer) {
+        setVaultStatus("Set a main server first before starting the vault timer.", true);
+        if (shouldSpeakConfirmation) {
+          speakText("Set a main server first before starting the vault timer.");
+        }
+        return;
+      }
+
+      vaultActive = true;
+      vaultOpenedAtMs = Date.now();
+      vaultFiveMinuteWarned = false;
+      vaultClosedAnnounced = false;
+      localStorage.setItem(VAULT_ACTIVE_KEY, "true");
+      localStorage.setItem(VAULT_OPENED_AT_KEY, String(vaultOpenedAtMs));
+      updateVaultDisplay();
+
+      if (shouldSpeakConfirmation) {
+        speakText(`Vault timer started for ${mainServer.name}. Current close time is ${formatDurationSpeech(getVaultDurationMs(mainServer))}.`);
+      }
+    }
+
+    function stopVaultTimer(shouldSpeakConfirmation = true) {
+      vaultActive = false;
+      vaultOpenedAtMs = 0;
+      vaultFiveMinuteWarned = false;
+      vaultClosedAnnounced = false;
+      localStorage.setItem(VAULT_ACTIVE_KEY, "false");
+      localStorage.removeItem(VAULT_OPENED_AT_KEY);
+      updateVaultDisplay();
+
+      if (shouldSpeakConfirmation) {
+        speakText("Vault timer stopped.");
+      }
+    }
+
+    function setMainServer(server, shouldSpeakConfirmation = true) {
+      if (!server) {
+        setListeningStatus("I heard the main server command, but I couldn't match that server.", true);
+        if (shouldSpeakConfirmation) {
+          speakText("I couldn't find that server to set as the main server.");
+        }
+        return;
+      }
+
+      mainServerName = server.name;
+      mainServerPreviousPlayerCount = server.playerCount;
+      localStorage.setItem(MAIN_SERVER_KEY, server.name);
+      updateMainServerDisplay();
+      setStatus(`Main server is now ${server.name}.`);
+      setListeningStatus(`Main server set to ${server.name}. I will announce updates for that server.`);
+
+      if (shouldSpeakConfirmation) {
+        speakText(`Main server set to ${server.name}. I will keep you updated.`);
+      }
+    }
+
+    function processVoiceCommand(transcript) {
+      const normalized = transcript.toLowerCase().trim();
+      setLastHeard(transcript);
+
+      const wakeMatch = findWakePhrase(normalized);
+      if (!wakeMatch) {
+        return;
+      }
+
+      heardWakePhrase = true;
+      showVoiceOrb("listening", "Strayed");
+      const command = normalized.slice(wakeMatch.index + wakeMatch.variant.length).trim();
+      setListeningStatus(`Wake phrase heard. Processing: "${transcript}"`);
+
+      if (command.includes("refresh") || command.includes("update data") || command.includes("check server")) {
+        setListeningStatus("Heard a refresh command. Updating server data now.");
+        refreshServers();
+        speakText("Refreshing server data now.");
+        return;
+      }
+
+      if (
+        command === "what pop"
+        || command === "pop"
+        || command === "what is pop"
+        || command === "what's pop"
+        || command === "player count"
+        || command === "main server pop"
+        || command === "what is the pop"
+      ) {
+        answerServerPop(getMainServer() || findServerMention("main server"));
+        return;
+      }
+
+      if (
+        command.includes("what would the vault timer be")
+        || command.includes("how long would the vault timer be")
+        || command.includes("what is the vault timer")
+        || command.includes("how long is vault timer")
+        || command.includes("vault timer length")
+        || command.includes("vault timer would be")
+      ) {
+        answerVaultDurationEstimate();
+        return;
+      }
+
+      if (
+        command.includes("how long left on locked crate")
+        || command.includes("how long left on lockedcrate")
+        || command.includes("locked crate time left")
+        || command.includes("lockedcrate time left")
+        || command.includes("how long is left on locked crate timer")
+        || command.includes("how long on locked crate timer")
+      ) {
+        answerLockedcrateTimer();
+        return;
+      }
+
+      if (
+        command.includes("how long left on vault")
+        || command.includes("vault time left")
+        || command.includes("how long is left on vault timer")
+        || command.includes("how long on vault timer")
+      ) {
+        answerVaultTimer();
+        return;
+      }
+
+      if (
+        command.includes("how long left on both timers")
+        || command.includes("how long left on timers")
+        || command.includes("timer status")
+        || command.includes("what timers are running")
+        || command.includes("how long left on all timers")
+        || command === "how long left"
+      ) {
+        answerBothTimers();
+        return;
+      }
+
+      const setMainMatch = command.match(/(?:set|make|use|track)\s+(?:the\s+)?main\s+server(?:\s+to|\s+as)?\s+([a-z0-9 _-]+)/i)
+        || command.match(/main\s+server(?:\s+to|\s+as)\s+([a-z0-9 _-]+)/i)
+        || command.match(/track\s+([a-z0-9 _-]+)\s+(?:as\s+)?(?:main\s+server)?/i);
+      if (setMainMatch) {
+        setMainServer(findServerMention(setMainMatch[1]));
+        return;
+      }
+
+      if (
+        command.includes("airdrop was last")
+        || command.includes("last was airdrop")
+        || command.includes("airdrop last")
+      ) {
+        setLastEvent("airdrop");
+        return;
+      }
+
+      if (
+        command.includes("locked crate was last")
+        || command.includes("lockedcrate was last")
+        || command.includes("last was locked crate")
+        || command.includes("last was lockedcrate")
+        || command.includes("locked crate last")
+        || command.includes("lockedcrate last")
+      ) {
+        setLastEvent("lockedcrate");
+        return;
+      }
+
+      if (command.includes("locked crate timer") || command.includes("lockedcrate timer")) {
+        startTimer(15 * 60 * 1000, "Locked crate timer");
+        return;
+      }
+
+      if (
+        command.includes("start locked crate timer")
+        || command.includes("start lockedcrate timer")
+        || command.includes("make locked crate timer")
+        || command.includes("begin locked crate timer")
+      ) {
+        startTimer(15 * 60 * 1000, "Lockedcrate Timer");
+        return;
+      }
+
+      if (
+        command.includes("start vault timer")
+        || command.includes("vault timer")
+        || command.includes("vault opened")
+        || command.includes("start the vault")
+        || command.includes("begin vault timer")
+      ) {
+        startVaultTimer();
+        return;
+      }
+
+      if (
+        command.includes("stop vault timer")
+        || command.includes("cancel vault timer")
+        || command.includes("end vault timer")
+        || command.includes("clear vault timer")
+      ) {
+        stopVaultTimer();
+        return;
+      }
+
+      if (
+        command.includes("stop timer")
+        || command.includes("cancel timer")
+        || command.includes("end timer")
+        || command.includes("clear locked crate timer")
+      ) {
+        stopTimer();
+        return;
+      }
+
+      if (
+        command.includes("alarm off")
+        || command.includes("turn alarm off")
+        || command.includes("disable alarm")
+      ) {
+        alarmEnabled = false;
+        localStorage.setItem(ALARM_ENABLED_KEY, "false");
+        updateAlarmButton();
+        speakText("Alarm turned off.");
+        return;
+      }
+
+      if (
+        command.includes("alarm on")
+        || command.includes("turn alarm on")
+        || command.includes("enable alarm")
+      ) {
+        alarmEnabled = true;
+        localStorage.setItem(ALARM_ENABLED_KEY, "true");
+        updateAlarmButton();
+        speakText("Alarm turned on.");
+        return;
+      }
+
+      if (
+        command.includes("voice commands off")
+        || command.includes("turn voice commands off")
+        || command.includes("stop listening")
+      ) {
+        stopListening();
+        speakText("Voice commands turned off.");
+        return;
+      }
+
+      if (
+        command.includes("voice commands on")
+        || command.includes("turn voice commands on")
+        || command.includes("start listening")
+      ) {
+        listeningEnabled = true;
+        localStorage.setItem(LISTENING_ENABLED_KEY, "true");
+        updateListeningButton();
+        startListening();
+        speakText("Voice commands turned on.");
+        return;
+      }
+
+      if (
+        command.includes("keep awake on")
+        || command.includes("turn keep awake on")
+        || command.includes("screen stay on")
+        || command.includes("keep screen awake")
+      ) {
+        wakeLockWanted = true;
+        localStorage.setItem(WAKE_LOCK_ENABLED_KEY, "true");
+        syncWakeLock();
+        speakText("Keep awake turned on.");
+        return;
+      }
+
+      if (
+        command.includes("keep awake off")
+        || command.includes("turn keep awake off")
+        || command.includes("allow sleep")
+      ) {
+        wakeLockWanted = false;
+        localStorage.setItem(WAKE_LOCK_ENABLED_KEY, "false");
+        syncWakeLock();
+        speakText("Keep awake turned off.");
+        return;
+      }
+
+      if (
+        command.includes("vault alarm off")
+        || command.includes("turn vault alarm off")
+        || command.includes("disable vault alarm")
+        || command.includes("mute vault alarm")
+      ) {
+        vaultAlarmEnabled = false;
+        localStorage.setItem(VAULT_ALARM_ENABLED_KEY, "false");
+        updateVaultAlarmButton();
+        speakText("Vault alarm turned off.");
+        return;
+      }
+
+      if (
+        command.includes("vault alarm on")
+        || command.includes("turn vault alarm on")
+        || command.includes("enable vault alarm")
+        || command.includes("unmute vault alarm")
+      ) {
+        vaultAlarmEnabled = true;
+        localStorage.setItem(VAULT_ALARM_ENABLED_KEY, "true");
+        updateVaultAlarmButton();
+        speakText("Vault alarm turned on.");
+        return;
+      }
+
+      if (
+        command.includes("speech off")
+        || command.includes("turn speech off")
+        || command.includes("disable speech")
+      ) {
+        speechEnabled = false;
+        localStorage.setItem(SPEECH_ENABLED_KEY, "false");
+        updateSpeechButton();
+        speakText("Speech turned off.");
+        return;
+      }
+
+      if (
+        command.includes("speech on")
+        || command.includes("turn speech on")
+        || command.includes("enable speech")
+      ) {
+        speechEnabled = true;
+        localStorage.setItem(SPEECH_ENABLED_KEY, "true");
+        updateSpeechButton();
+        speakText("Speech turned on.");
+        return;
+      }
+
+      const timerMatch = command.match(/(?:make|set|start)\s+(?:a\s+)?(.+?)\s+timer/)
+        || command.match(/timer\s+(?:for\s+)?(.+)/)
+        || command.match(/(.+?)\s+timer/);
+      if (timerMatch) {
+        const durationMs = parseDurationToMs(timerMatch[1]);
+        startTimer(durationMs, "Lockedcrate Timer");
+        return;
+      }
+
+      if (isPopulationQuestion(command)) {
+        answerServerPop(findServerMention(command));
+        return;
+      }
+
+      if (!command || command.length < 3) {
+        answerServerPop(findServerMention("current server"));
+        return;
+      }
+
+      setListeningStatus("Wake phrase detected, but I didn't understand the command.", true);
+      speakText("I heard you, but I didn't understand the command.");
+    }
+
+    function stopListening() {
+      manualStop = true;
+      if (recognition && recognitionActive) {
+        recognition.stop();
+      }
+      recognitionActive = false;
+      listeningEnabled = false;
+      localStorage.setItem(LISTENING_ENABLED_KEY, "false");
+      updateListeningButton();
+      setListeningStatus("Voice commands are off.");
+      heardWakePhrase = false;
+      hideVoiceOrb(0);
+      releaseMicrophoneAccess();
+    }
+
+    async function startListening() {
+      if (!SpeechRecognition) {
+        listeningEnabled = false;
+        localStorage.setItem(LISTENING_ENABLED_KEY, "false");
+        updateListeningButton();
+        setListeningStatus("This browser does not support voice recognition. Chrome or Edge usually works best.", true);
+        return;
+      }
+
+      const permissionState = await getMicrophonePermissionState();
+      if (permissionState === "denied") {
+        listeningEnabled = false;
+        localStorage.setItem(LISTENING_ENABLED_KEY, "false");
+        updateListeningButton();
+        setListeningStatus("Microphone access is blocked in the browser. Re-enable it in site settings to use voice commands.", true);
+        return;
+      }
+
+      const microphoneReady = await ensureMicrophoneAccess();
+      if (!microphoneReady) {
+        listeningEnabled = false;
+        localStorage.setItem(LISTENING_ENABLED_KEY, "false");
+        updateListeningButton();
+        setListeningStatus("Microphone access was not granted. Allow it once for this site and try again. Using http://localhost works better than file://.", true);
+        return;
+      }
+
+      if (!recognition) {
+        recognition = new SpeechRecognition();
+        recognition.continuous = true;
+        recognition.interimResults = false;
+        recognition.lang = "en-US";
+
+        recognition.addEventListener("start", () => {
+          recognitionActive = true;
+          heardWakePhrase = false;
+          setListeningStatus("Voice commands are armed. Say hey Strayed.");
+        });
+
+        recognition.addEventListener("result", (event) => {
+          for (let i = event.resultIndex; i < event.results.length; i += 1) {
+            if (event.results[i].isFinal) {
+              processVoiceCommand(event.results[i][0].transcript);
+            }
+          }
+        });
+
+        recognition.addEventListener("error", (event) => {
+          recognitionActive = false;
+          if (event.error === "not-allowed") {
+            listeningEnabled = false;
+            localStorage.setItem(LISTENING_ENABLED_KEY, "false");
+            updateListeningButton();
+            hideVoiceOrb(0);
+            setListeningStatus("Microphone permission was denied. If your browser allows it, save the permission for this site and turn voice commands on again.", true);
+            return;
+          }
+
+          if (event.error !== "aborted") {
+            heardWakePhrase = false;
+            hideVoiceOrb(0);
+            setListeningStatus(`Voice recognition error: ${event.error}. Trying again...`, true);
+          }
+        });
+
+        recognition.addEventListener("end", () => {
+          recognitionActive = false;
+          if (listeningEnabled && !manualStop) {
+            heardWakePhrase = false;
+            hideVoiceOrb(0);
+            setListeningStatus("Voice commands are armed. Say hey Strayed.");
+            recognition.start();
+            return;
+          }
+
+          heardWakePhrase = false;
+          hideVoiceOrb(0);
+          manualStop = false;
+        });
+      }
+
+      if (!recognitionActive) {
+        manualStop = false;
+        recognition.start();
+      }
+    }
+
+    function populateSelect(serverList) {
+      const savedMainServer = serverList.some((server) => server.name === getMainServerName())
+        ? getMainServerName()
+        : serverList[0]?.name || "";
+
+      elements.mainServerSelect.innerHTML = "";
+
+      serverList.forEach((server) => {
+        const mainOption = document.createElement("option");
+        mainOption.value = server.name;
+        mainOption.textContent = `${server.name} (${server.playerCount}/${server.maxPlayerCount})`;
+        mainOption.selected = server.name === savedMainServer;
+        elements.mainServerSelect.appendChild(mainOption);
+      });
+
+      if (savedMainServer) {
+        mainServerName = savedMainServer;
+        localStorage.setItem(MAIN_SERVER_KEY, savedMainServer);
+      }
+
+      updateMainServerDisplay();
+      updateEventDisplay();
+    }
+
+    async function fetchServers() {
+      const response = await fetch(API_URL, { cache: "no-store" });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+
+      const payload = await response.json();
+      return payload?.data?.servers ?? [];
+    }
+
+    async function refreshServers() {
+      try {
+        setStatus("Refreshing server data...");
+        const latestServers = await fetchServers();
+
+        if (!Array.isArray(latestServers) || latestServers.length === 0) {
+          throw new Error("No servers returned by the API.");
+        }
+
+        servers = latestServers.sort((a, b) => a.name.localeCompare(b.name));
+        populateSelect(servers);
+        const activeServer = getMainServer() || servers[0];
+
+        if (activeServer) {
+          updateServerDetails(activeServer);
+          setStatus(`Showing live population for ${activeServer.name}.`);
+        }
+
+        const activeMainServer = servers.find((server) => server.name === getMainServerName()) || activeServer || null;
+        if (activeMainServer) {
+          if (!mainServerName) {
+            mainServerName = activeMainServer.name;
+            localStorage.setItem(MAIN_SERVER_KEY, activeMainServer.name);
+          }
+
+          const shouldSpeakMainUpdate = mainServerPreviousPlayerCount !== null
+            && mainServerPreviousPlayerCount !== activeMainServer.playerCount;
+          mainServerPreviousPlayerCount = activeMainServer.playerCount;
+          updateMainServerDisplay();
+
+          if (shouldSpeakMainUpdate) {
+            speakPlayerCount(activeMainServer);
+          }
+        }
+
+        updateLastUpdated();
+        updateEventDisplay();
+        updateVaultDisplay();
+      } catch (error) {
+        setStatus(`Could not refresh server data: ${error.message}`, true);
+      }
+    }
+
+    function handleMainServerSelection() {
+      const selectedName = elements.mainServerSelect.value;
+      const selectedServer = servers.find((server) => server.name === selectedName);
+      setMainServer(selectedServer, false);
+      updateServerDetails(selectedServer);
+      setStatus(selectedServer
+        ? `Showing live population for ${selectedServer.name}.`
+        : "Choose a server to view its population.");
+      updateEventDisplay();
+    }
+
+    function handleLastEventSelection() {
+      setLastEvent(elements.lastEventSelect.value, false);
+    }
+
+    function handleTimerStart() {
+      const durationMs = parseDurationToMs(elements.timerInput.value);
+      startTimer(durationMs, "Lockedcrate Timer", false);
+    }
+
+    function handleVaultStart() {
+      startVaultTimer(false);
+    }
+
+    function handleVaultStop() {
+      stopVaultTimer(false);
+    }
+
+    function handleVaultAlarmToggle() {
+      vaultAlarmEnabled = !vaultAlarmEnabled;
+      localStorage.setItem(VAULT_ALARM_ENABLED_KEY, String(vaultAlarmEnabled));
+      updateVaultAlarmButton();
+    }
+
+    function handleWakeLockToggle() {
+      wakeLockWanted = !wakeLockWanted;
+      localStorage.setItem(WAKE_LOCK_ENABLED_KEY, String(wakeLockWanted));
+      syncWakeLock();
+    }
+
+    function handleAlarmToggle() {
+      alarmEnabled = !alarmEnabled;
+      localStorage.setItem(ALARM_ENABLED_KEY, String(alarmEnabled));
+      updateAlarmButton();
+    }
+
+    function handleStopTimer() {
+      stopTimer(false);
+    }
+
+    function startAuxiliaryTickers() {
+      clearInterval(eventTicker);
+      clearInterval(timerTicker);
+      eventTicker = setInterval(updateEventDisplay, 1000);
+      timerTicker = setInterval(() => {
+        updateTimerDisplay();
+        updateVaultDisplay();
+      }, 1000);
+    }
+
+    function handleSpeechToggle() {
+      speechEnabled = !speechEnabled;
+      localStorage.setItem(SPEECH_ENABLED_KEY, String(speechEnabled));
+      updateSpeechButton();
+      if (!speechEnabled && "speechSynthesis" in window) {
+        window.speechSynthesis.cancel();
+      }
+    }
+
+    function handleVoiceChange() {
+      if (elements.voiceSelect.value) {
+        localStorage.setItem(VOICE_KEY, elements.voiceSelect.value);
+      } else {
+        localStorage.removeItem(VOICE_KEY);
+      }
+    }
+
+    function handleListeningToggle() {
+      listeningEnabled = !listeningEnabled;
+      localStorage.setItem(LISTENING_ENABLED_KEY, String(listeningEnabled));
+      updateListeningButton();
+
+      if (listeningEnabled) {
+        startListening();
+      } else {
+        stopListening();
+      }
+    }
+
+    function startPolling() {
+      clearInterval(pollTimer);
+      pollTimer = setInterval(refreshServers, POLL_INTERVAL_MS);
+    }
+
+    elements.mainServerSelect.addEventListener("change", handleMainServerSelection);
+    elements.refreshButton.addEventListener("click", refreshServers);
+    elements.setLastEventButton.addEventListener("click", handleLastEventSelection);
+    elements.startVaultButton.addEventListener("click", handleVaultStart);
+    elements.stopVaultButton.addEventListener("click", handleVaultStop);
+    elements.toggleVaultAlarmButton.addEventListener("click", handleVaultAlarmToggle);
+    elements.setTimerButton.addEventListener("click", handleTimerStart);
+    elements.toggleAlarmButton.addEventListener("click", handleAlarmToggle);
+    elements.stopTimerButton.addEventListener("click", handleStopTimer);
+    elements.toggleWakeLockButton.addEventListener("click", handleWakeLockToggle);
+    elements.voiceSelect.addEventListener("change", handleVoiceChange);
+    elements.toggleSpeechButton.addEventListener("click", handleSpeechToggle);
+    elements.toggleListeningButton.addEventListener("click", handleListeningToggle);
+
+    updateSpeechButton();
+    updateListeningButton();
+    updateAlarmButton();
+    updateVaultAlarmButton();
+    updateWakeLockButton();
+    elements.wakePhrase.textContent = "Hey Strayed";
+    elements.lastEventSelect.value = lastEventType || "airdrop";
+    populateVoiceSelect();
+    if ("speechSynthesis" in window) {
+      window.speechSynthesis.addEventListener("voiceschanged", populateVoiceSelect);
+    }
+    if (!SpeechRecognition) {
+      setListeningStatus("Voice recognition is not available in this browser. Chrome or Edge usually works best.", true);
+    } else if (window.location.protocol === "file:") {
+      setListeningStatus("Voice recognition on file:// often re-prompts for the microphone. Run this page through http://localhost so the browser can remember mic permission properly.", true);
+      if (listeningEnabled) {
+        startListening();
+      }
+    } else if (listeningEnabled) {
+      startListening();
+    }
+
+    refreshServers();
+    startPolling();
+    startAuxiliaryTickers();
+    updateEventDisplay();
+    updateTimerDisplay();
+    updateVaultDisplay();
+    syncWakeLock();
+    document.addEventListener("visibilitychange", () => {
+      if (document.visibilityState === "visible") {
+        syncWakeLock();
+      }
+    });
+  </script>
+</body>
+</html>
