@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Strayed Jarvis </title>
+  <title>Strayed Jarvis</title>
   <style>
     :root {
       --bg-1: #08111f;
@@ -419,7 +419,7 @@
 
   <main class="card">
     <h1>Strayed Jarvis</h1>
-    <p>Say <strong>Jarvis</strong> for commands or <strong>coms</strong> to mute spoken updates for a minute. Key info is in the strip below.</p>
+    <p>Say <strong>Jarvis</strong> to give a command. Say <strong>comms</strong> to silence automatic updates for a minute.</p>
 
     <!-- ── TOP SUMMARY STRIP ── -->
     <div class="summary-strip" aria-label="At-a-glance summary">
@@ -503,37 +503,37 @@ Voice — say <strong>Jarvis</strong> then:
         <div class="footer" id="lastUpdated">Last updated: --</div>
       </section>
 
-      <!-- Map Event Calibration -->
-      <section class="panel" aria-label="Map Event Calibration">
+      <!-- Map Events -->
+      <section class="panel" aria-label="Map Events">
         <div class="panel-head">
           <h2>Map Event Calibration</h2>
           <div class="info-wrap">
             <div class="info-dot">i</div>
-            <div class="info-tip">Calibrate the last map drop after a reset. If the server wipes, the calibration clears automatically.
+            <div class="info-tip">Tracks the hourly map-event rotation. Calibrate the last event once and it auto-tracks.
 
 Voice — say <strong>Jarvis</strong> then:
-· <em>calibrate airdrop</em>
-· <em>calibrate locked crate</em>
-· <em>map event calibration</em>
-· <em>when is next drop</em>
-· <em>crate drops in 5 minutes</em></div>
+· <em>airdrop was calibrated last</em>
+· <em>locked crate was calibrated last</em>
+· <em>what is next</em> — next event + ETA
+· <em>when is next airdrop</em>
+· <em>when is next locked crate</em></div>
           </div>
         </div>
         <div class="compact-stack">
           <div class="controls">
-            <select id="lastEventSelect" aria-label="Choose the map event calibration">
-              <option value="airdrop">Airdrop calibrated last</option>
-              <option value="lockedcrate">Locked crate calibrated last</option>
+            <select id="lastEventSelect" aria-label="Choose the last map event">
+              <option value="airdrop">Airdrop was calibrated last</option>
+              <option value="lockedcrate">Locked crate was calibrated last</option>
             </select>
             <button id="setLastEventButton" type="button">Calibrate</button>
           </div>
           <div class="stats">
             <div class="stat">
-              <div class="label">Map Event Calibration</div>
-              <div class="value" id="lastEventName" style="font-size:1rem;font-weight:600;">Not calibrated yet</div>
+              <div class="label">Last Event</div>
+              <div class="value" id="lastEventName" style="font-size:1rem;font-weight:600;">--</div>
             </div>
             <div class="stat">
-              <div class="label">Next Drop</div>
+              <div class="label">Next Event</div>
               <div class="value" id="nextEventName" style="font-size:1rem;font-weight:600;">--</div>
             </div>
             <div class="stat">
@@ -541,7 +541,7 @@ Voice — say <strong>Jarvis</strong> then:
               <div class="value" id="nextEventEta" style="font-size:1rem;font-weight:600;">--</div>
             </div>
           </div>
-          <div class="status" id="eventStatus">Map event calibration is idle.</div>
+          <div class="status" id="eventStatus">Map event tracking is idle.</div>
         </div>
       </section>
 
@@ -613,9 +613,9 @@ Voice — say <strong>Jarvis</strong> then:
           <h2>Voice Controls</h2>
           <div class="info-wrap">
             <div class="info-dot">i</div>
-            <div class="info-tip">Wake word: <strong>Coms</strong> — say it alone to mute all spoken updates for one minute. Normal commands still work with <strong>Jarvis</strong>.
+            <div class="info-tip">Wake word: <strong>Jarvis</strong> — say it alone and Jarvis asks "Yeah?" then waits for your command.
 
-Voice — say <strong>Jarvis</strong> for commands or <strong>coms</strong> to mute the page then:
+Voice — say <strong>Jarvis</strong> then:
 · <em>speech on / off</em>
 · <em>voice commands on / off</em>
 · <em>keep awake on / off</em></div>
@@ -644,7 +644,9 @@ Voice — say <strong>Jarvis</strong> for commands or <strong>coms</strong> to m
             <div class="info-dot">i</div>
             <div class="info-tip">What Jarvis last heard. If a command didn't work, check what was recognized here.
 
-Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands match by keywords, not exact phrases.</div>
+Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands match by keywords, not exact phrases.
+
+Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
           </div>
         </div>
         <div class="stats">
@@ -654,12 +656,11 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
           </div>
           <div class="stat">
             <div class="label">Wake Phrase</div>
-            <div class="value" id="wakePhrase" style="font-size:0.9rem;font-weight:500;">Coms</div>
+            <div class="value" id="wakePhrase" style="font-size:0.9rem;font-weight:500;">Jarvis</div>
           </div>
         </div>
       </section>
     </div>
-
   </main>
 
   <script>
@@ -679,17 +680,10 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     const VAULT_ACTIVE_KEY = "crustacean-vault-active";
     const VAULT_OPENED_AT_KEY = "crustacean-vault-opened-at";
     const WAKE_LOCK_ENABLED_KEY = "crustacean-wake-lock-enabled";
-    const COMM_SILENCE_UNTIL_KEY = "strayed-comms-silence-until";
-    const MAP_EVENT_CALIBRATION_WIPE_KEY = "strayed-map-event-wipe-epoch";
+    const COMMS_MUTE_UNTIL_KEY = "strayed-jarvis-comms-mute-until";
+    const MAP_EVENT_CALIBRATION_EVENT_KEY = "strayed-jarvis-map-calibration-event";
+    const MAP_EVENT_CALIBRATION_WIPE_KEY = "strayed-jarvis-map-calibration-wipe";
     const WAKE_PHRASE_VARIANTS = [
-      "coms",
-      "comms",
-      "coms down",
-      "comms down",
-      "coms off",
-      "comms off",
-      "coms quiet",
-      "comms quiet",
       "jarvis",
       "jarves",
       "jarvice",
@@ -698,6 +692,14 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       "jarvi",
       "java",
       "jarv"
+    ];
+    const COMMS_VARIANTS = [
+      "comms",
+      "coms",
+      "comm",
+      "com",
+      "comes",
+      "communication"
     ];
     const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
 
@@ -775,8 +777,10 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     let timerTicker;
     let orbHideTimer;
     let wakeLockSentinel = null;
-    let commsSilenceUntilMs = Number(localStorage.getItem(COMM_SILENCE_UNTIL_KEY) || 0);
-    let lastEventWipeEpoch = Number(localStorage.getItem(MAP_EVENT_CALIBRATION_WIPE_KEY) || 0);
+    let commsMuteUntil = Number(localStorage.getItem(COMMS_MUTE_UNTIL_KEY) || 0);
+    let commsMuteTimer = null;
+    let mapEventCalibration = localStorage.getItem(MAP_EVENT_CALIBRATION_EVENT_KEY) || "";
+    let mapEventCalibrationWipe = Number(localStorage.getItem(MAP_EVENT_CALIBRATION_WIPE_KEY) || 0);
 
     function setStatus(message, isError = false) {
       elements.status.textContent = message;
@@ -916,72 +920,71 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       microphoneStream = null;
     }
 
-    function updateCommsSilenceState() {
-      if (commsSilenceUntilMs && commsSilenceUntilMs <= Date.now()) {
-        commsSilenceUntilMs = 0;
-        localStorage.removeItem(COMM_SILENCE_UNTIL_KEY);
+    function setLastHeard(message) {
+      elements.lastHeard.textContent = message || "Nothing yet";
+    }
+
+    function isCommsMuted() {
+      return Date.now() < commsMuteUntil;
+    }
+
+    function clearCommsMuteTimer() {
+      if (commsMuteTimer) {
+        clearTimeout(commsMuteTimer);
+        commsMuteTimer = null;
       }
     }
 
-    function isCommsSilenced() {
-      updateCommsSilenceState();
-      return commsSilenceUntilMs > Date.now();
+    function muteCommsForMs(durationMs = 60000) {
+      commsMuteUntil = Date.now() + durationMs;
+      localStorage.setItem(COMMS_MUTE_UNTIL_KEY, String(commsMuteUntil));
+      clearCommsMuteTimer();
+      commsMuteTimer = setTimeout(() => {
+        if (Date.now() >= commsMuteUntil) {
+          commsMuteUntil = 0;
+          localStorage.removeItem(COMMS_MUTE_UNTIL_KEY);
+        }
+      }, durationMs + 100);
     }
 
-    function activateCommsSilence() {
-      commsSilenceUntilMs = Date.now() + 60 * 1000;
-      localStorage.setItem(COMM_SILENCE_UNTIL_KEY, String(commsSilenceUntilMs));
-      if ("speechSynthesis" in window) {
-        window.speechSynthesis.cancel();
+    function findCommsTrigger(normalizedTranscript) {
+      const compactTranscript = normalizedTranscript.toLowerCase().replace(/[^a-z0-9\s]/g, " ");
+      const words = compactTranscript.split(/\s+/).filter(Boolean);
+
+      if (COMMS_VARIANTS.some((variant) => compactTranscript.includes(variant))) {
+        return true;
       }
-      setListeningStatus("Coms is active. Spoken updates are muted for 1 minute.");
+
+      return words.some((word) => fuzzyMatch(word, "comms", 0.72) || fuzzyMatch(word, "communications", 0.78));
     }
 
-    function getServerWipeEpoch(server) {
+    function getCurrentServerWipeEpoch(server) {
       return Number(server?.wipeEpoch || 0);
     }
 
-    function hasCalibratedMapEvent(server = getMainServer()) {
-      return Boolean(lastEventType && lastEventObservedAt && server && getServerWipeEpoch(server) && lastEventWipeEpoch === getServerWipeEpoch(server));
-    }
-
-    function clearMapEventCalibration(shouldUpdateDisplay = true) {
-      lastEventType = "";
-      lastEventObservedAt = 0;
-      lastEventWipeEpoch = 0;
-      localStorage.removeItem(LAST_EVENT_KEY);
-      localStorage.removeItem(LAST_EVENT_TIME_KEY);
+    function clearMapEventCalibration() {
+      mapEventCalibration = "";
+      mapEventCalibrationWipe = 0;
+      localStorage.removeItem(MAP_EVENT_CALIBRATION_EVENT_KEY);
       localStorage.removeItem(MAP_EVENT_CALIBRATION_WIPE_KEY);
-      if (shouldUpdateDisplay) {
-        updateEventDisplay();
-      }
+      elements.lastEventSelect.value = "airdrop";
     }
 
-    function calibrateMapEvent(eventType, shouldSpeakConfirmation = true) {
-      const mainServer = getMainServer();
-      if (!mainServer || !getServerWipeEpoch(mainServer)) {
-        setEventStatus("Set a main server first so I can calibrate the map event.", true);
-        if (shouldSpeakConfirmation) {
-          speakText("Set a main server first so I can calibrate the map event.");
-        }
+    function syncMapEventCalibrationWithServer(server) {
+      const currentWipe = getCurrentServerWipeEpoch(server);
+      if (!currentWipe) {
         return;
       }
 
-      lastEventType = eventType;
-      lastEventObservedAt = Date.now();
-      lastEventWipeEpoch = getServerWipeEpoch(mainServer);
-      localStorage.setItem(LAST_EVENT_KEY, eventType);
-      localStorage.setItem(LAST_EVENT_TIME_KEY, String(lastEventObservedAt));
-      localStorage.setItem(MAP_EVENT_CALIBRATION_WIPE_KEY, String(lastEventWipeEpoch));
-      updateEventDisplay();
-
-      if (shouldSpeakConfirmation) {
-        speakText(`Map event calibrated to ${formatEventName(eventType)}.`);
+      if (mapEventCalibrationWipe && mapEventCalibrationWipe !== currentWipe) {
+        clearMapEventCalibration();
+        setEventStatus("Not calibrated yet. The server reset, so map-event calibration was cleared.", true);
       }
-    }
 
-    function setLastHeard(message) {
-      elements.lastHeard.textContent = message || "Nothing yet";
+      if (mapEventCalibrationWipe !== currentWipe) {
+        mapEventCalibrationWipe = currentWipe;
+        localStorage.setItem(MAP_EVENT_CALIBRATION_WIPE_KEY, String(currentWipe));
+      }
     }
 
     // Levenshtein distance for fuzzy word matching
@@ -1143,37 +1146,27 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       elements.lastUpdated.textContent = `Last updated: ${timestamp}`;
     }
 
-    function findPreferredVoice() {
-      return availableVoices.find((voice) => {
-        const normalizedName = normalizeName(voice.name);
-        const normalizedLang = normalizeName(voice.lang);
-        return normalizedName.includes("microsoftandrewonlinenatural") && normalizedLang.includes("enus");
-      }) || availableVoices.find((voice) => {
-        const normalizedName = normalizeName(voice.name);
-        const normalizedLang = normalizeName(voice.lang);
-        return normalizedName.includes("andrew") && normalizedLang.includes("enus");
-      }) || availableVoices.find((voice) => normalizeName(voice.name).includes("microsoftandrew")) || null;
+    function isPreferredVoice(voice) {
+      const name = String(voice?.name || "").toLowerCase();
+      const lang = String(voice?.lang || "").toLowerCase();
+      return name.includes("microsoft andrew online") && (name.includes("natural") || lang.includes("en-us") || lang === "en-us");
     }
 
     function populateVoiceSelect() {
       availableVoices = window.speechSynthesis?.getVoices?.() ?? [];
       const savedVoice = localStorage.getItem(VOICE_KEY) || "";
-      const preferredVoice = findPreferredVoice();
 
       elements.voiceSelect.innerHTML = "";
-
-      if (!availableVoices.length) {
-        const option = document.createElement("option");
-        option.textContent = "Default browser voice";
-        option.value = "";
-        elements.voiceSelect.appendChild(option);
-        return;
-      }
 
       const defaultOption = document.createElement("option");
       defaultOption.value = "";
       defaultOption.textContent = "Default browser voice";
       elements.voiceSelect.appendChild(defaultOption);
+
+      if (!availableVoices.length) {
+        elements.voiceSelect.value = "";
+        return;
+      }
 
       availableVoices.forEach((voice) => {
         const option = document.createElement("option");
@@ -1183,15 +1176,17 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         elements.voiceSelect.appendChild(option);
       });
 
-      if (savedVoice && !availableVoices.some((voice) => voice.name === savedVoice)) {
-        localStorage.removeItem(VOICE_KEY);
+      let selectedName = savedVoice;
+      if (!selectedName || !availableVoices.some((voice) => voice.name === selectedName)) {
+        const preferredVoice = availableVoices.find(isPreferredVoice) || null;
+        selectedName = preferredVoice ? preferredVoice.name : "";
       }
 
-      if (!savedVoice && preferredVoice) {
-        elements.voiceSelect.value = preferredVoice.name;
-        localStorage.setItem(VOICE_KEY, preferredVoice.name);
+      elements.voiceSelect.value = selectedName;
+      if (selectedName) {
+        localStorage.setItem(VOICE_KEY, selectedName);
       } else {
-        elements.voiceSelect.value = savedVoice || "";
+        localStorage.removeItem(VOICE_KEY);
       }
     }
 
@@ -1201,7 +1196,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     }
 
     function createUtterance(message) {
-      if (!speechEnabled || isCommsSilenced() || !("speechSynthesis" in window) || !message) {
+      if (!speechEnabled || !("speechSynthesis" in window) || !message || isCommsMuted()) {
         return null;
       }
 
@@ -1214,7 +1209,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       }
 
       utterance.addEventListener("start", () => {
-        showVoiceOrb("speaking", "Coms");
+        showVoiceOrb("speaking", "Jarvis");
       });
 
       utterance.addEventListener("end", () => {
@@ -1225,7 +1220,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     }
 
     function speakPlayerCount(server) {
-      if (!server) {
+      if (!server || isCommsMuted()) {
         return;
       }
 
@@ -1239,6 +1234,10 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     }
 
     function speakText(message) {
+      if (isCommsMuted()) {
+        return;
+      }
+
       const utterance = createUtterance(message);
       if (!utterance) {
         return;
@@ -1406,17 +1405,14 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       return eventType === "lockedcrate" ? "Locked crate" : eventType === "airdrop" ? "Airdrop" : "--";
     }
 
-    function updateMapEventStateForServer(server) {
-      const currentWipeEpoch = getServerWipeEpoch(server);
-      if (lastEventType && lastEventWipeEpoch && currentWipeEpoch && lastEventWipeEpoch !== currentWipeEpoch) {
-        clearMapEventCalibration(false);
-      }
+    function getCalibrationStatusText() {
+      return mapEventCalibration ? formatEventName(mapEventCalibration) : "Not calibrated yet";
     }
 
     function getNextMapEvent() {
       const mainServer = getMainServer();
       const anchorMs = getHourlyEventAnchor(mainServer);
-      if (!mainServer || !anchorMs || !lastEventType || !hasCalibratedMapEvent(mainServer)) {
+      if (!mainServer || !anchorMs || !mapEventCalibration) {
         return null;
       }
 
@@ -1426,7 +1422,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         ? anchorMs
         : anchorMs + (Math.floor((now - anchorMs) / (60 * 60 * 1000)) + 1) * 60 * 60 * 1000;
       const futureSteps = Math.max(1, Math.round((nextEventTime - referenceTime) / (60 * 60 * 1000)));
-      const nextEventType = futureSteps % 2 === 1 ? getOppositeEvent(lastEventType) : lastEventType;
+      const nextEventType = futureSteps % 2 === 1 ? getOppositeEvent(mapEventCalibration) : mapEventCalibration;
 
       return {
         server: mainServer,
@@ -1437,13 +1433,12 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
 
     function updateEventDisplay() {
       const mainServer = getMainServer();
-      updateMapEventStateForServer(mainServer);
-      const calibrated = hasCalibratedMapEvent(mainServer);
       const nextEvent = getNextMapEvent();
 
+      elements.lastEventName.textContent = getCalibrationStatusText();
+
       if (!mainServer) {
-        elements.lastEventName.textContent = "Not calibrated yet";
-        elements.nextEventName.textContent = "--";
+        elements.nextEventName.textContent = "Not calibrated yet";
         elements.nextEventEta.textContent = "--";
         elements.summaryNextEvent.textContent = "--";
         elements.summaryNextEta.textContent = "set server";
@@ -1451,20 +1446,17 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         return;
       }
 
-      if (!calibrated) {
-        elements.lastEventName.textContent = "Not calibrated yet";
-        elements.nextEventName.textContent = "--";
+      if (!mapEventCalibration) {
+        elements.nextEventName.textContent = "Not calibrated yet";
         elements.nextEventEta.textContent = "--";
-        elements.summaryNextEvent.textContent = "Not calibrated";
-        elements.summaryNextEta.textContent = "reset";
-        setEventStatus("Not calibrated yet. Calibrate the map event after each server reset.");
+        elements.summaryNextEvent.textContent = "--";
+        elements.summaryNextEta.textContent = "not calibrated";
+        setEventStatus("Not calibrated yet.", true);
         return;
       }
 
-      elements.lastEventName.textContent = formatEventName(lastEventType);
-
       if (!nextEvent) {
-        elements.nextEventName.textContent = "--";
+        elements.nextEventName.textContent = "Not calibrated yet";
         elements.nextEventEta.textContent = "--";
         elements.summaryNextEvent.textContent = "--";
         elements.summaryNextEta.textContent = "--";
@@ -1497,8 +1489,29 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       }
     }
 
-    function parseDurationToMs(input) {
+    function setLastEvent(eventType, shouldSpeakConfirmation = true) {
+      mapEventCalibration = eventType;
+      lastEventObservedAt = Date.now();
+      localStorage.setItem(MAP_EVENT_CALIBRATION_EVENT_KEY, eventType);
+      localStorage.setItem(LAST_EVENT_KEY, eventType);
+      localStorage.setItem(LAST_EVENT_TIME_KEY, String(lastEventObservedAt));
+      elements.lastEventSelect.value = eventType;
+      eventReminderKey = "";
+      const mainServer = getMainServer();
+      if (mainServer) {
+        mapEventCalibrationWipe = getCurrentServerWipeEpoch(mainServer);
+        if (mapEventCalibrationWipe) {
+          localStorage.setItem(MAP_EVENT_CALIBRATION_WIPE_KEY, String(mapEventCalibrationWipe));
+        }
+      }
+      updateEventDisplay();
 
+      if (shouldSpeakConfirmation) {
+        speakText(`${formatEventName(eventType)} calibrated as the last map event. I will track what comes next.`);
+      }
+    }
+
+    function parseDurationToMs(input) {
       const normalized = String(input || "").toLowerCase();
       let totalMs = 0;
       const hourMatch = normalized.match(/(\d+)\s*(?:hour|hours|hr|hrs|h)\b/);
@@ -1766,19 +1779,20 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
 
     function processVoiceCommand(transcript) {
       const normalized = transcript.toLowerCase().trim();
-      setLastHeard(transcript);
 
-      if (fuzzyIncludes(normalized, "coms", 0.55) || fuzzyIncludes(normalized, "comms", 0.55)) {
-        activateCommsSilence();
+      if (findCommsTrigger(normalized)) {
+        muteCommsForMs(60000);
         return;
       }
+
+      setLastHeard(transcript);
 
       // If we're in "waiting for command" mode, treat this utterance as the command directly
       if (waitingForCommand) {
         clearTimeout(waitingForCommandTimer);
         waitingForCommand = false;
         heardWakePhrase = true;
-        showVoiceOrb("listening", "Coms");
+        showVoiceOrb("listening", "Jarvis");
         setListeningStatus(`Follow-up command: "${transcript}"`);
         // Re-enter processVoiceCommand but now with the transcript treated as a bare command
         // by injecting a fake wake match
@@ -1792,7 +1806,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       }
 
       heardWakePhrase = true;
-      showVoiceOrb("listening", "Coms");
+      showVoiceOrb("listening", "Jarvis");
 
       // Extract the command: everything after the wake word
       let command = "";
@@ -1811,12 +1825,13 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       // ---- EMPTY / JUST WAKE WORD → "Yeah?" ----
       if (!command || command.length < 2) {
         setListeningStatus("Wake word heard. Waiting for command...");
+        speakText("Yeah?");
         waitingForCommand = true;
         clearTimeout(waitingForCommandTimer);
         // If no follow-up arrives within 8 seconds, reset
         waitingForCommandTimer = setTimeout(() => {
           waitingForCommand = false;
-          setListeningStatus("Voice commands are armed. Say Jarvis for commands or coms to mute.");
+          setListeningStatus("Voice commands are armed. Say Jarvis or say comms.");
         }, 8000);
         hideVoiceOrb(500);
         return;
@@ -1827,6 +1842,10 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     }
 
     function dispatchCommand(command, transcript) {
+      if (findCommsTrigger(command)) {
+        muteCommsForMs(60000);
+        return;
+      }
 
       // Helper: returns true if command contains a fuzzy match for the vault word
       // "volt", "valt", "vault", "vot" etc.
@@ -1845,27 +1864,6 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       function cmdHasAirdrop(cmd) {
         return cmd.includes("airdrop") || cmd.includes("air drop") || cmd.includes("drop")
           || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "airdrop", 0.65));
-      }
-      function cmdHasCommsMute(cmd) {
-        const normalized = cmd.trim();
-        const tokens = tokenize(normalized);
-        if (!tokens.length) {
-          return false;
-        }
-        const first = tokens[0];
-        const firstTwo = tokens.slice(0, 2).join("");
-        return fuzzyMatch(first, "coms", 0.55)
-          || fuzzyMatch(first, "comms", 0.55)
-          || firstTwo === "commsdown"
-          || firstTwo === "comsdown"
-          || normalized === "coms"
-          || normalized === "comms"
-          || normalized.startsWith("coms down")
-          || normalized.startsWith("comms down")
-          || normalized.startsWith("coms off")
-          || normalized.startsWith("comms off")
-          || normalized.startsWith("quiet")
-          || normalized.startsWith("mute");
       }
       function cmdHasStop(cmd) {
         const words = cmd.split(/\s+/);
@@ -1896,12 +1894,6 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       }
       function cmdHasSpeech(cmd) {
         return cmd.includes("speech") || cmd.includes("voice output") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "speech", 0.72));
-      }
-
-      // ---- COMS MUTE ----
-      if (cmdHasCommsMute(command)) {
-        activateCommsSilence();
-        return;
       }
 
       // ---- REFRESH ----
@@ -1976,15 +1968,15 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         return;
       }
 
-      // ---- SET LAST EVENT: AIRDROP ----
-      if (cmdHasAirdrop(command) && (command.includes("last") || command.includes("was") || command.includes("just"))) {
-        calibrateMapEvent("airdrop");
+      // ---- CALIBRATE: AIRDROP ----
+      if ((cmdHasAirdrop(command) || command.includes("airdrop")) && (command.includes("calibrate") || command.includes("calibration") || command.includes("last") || command.includes("was") || command.includes("just"))) {
+        setLastEvent("airdrop");
         return;
       }
 
-      // ---- SET LAST EVENT: LOCKED CRATE ----
-      if (cmdHasLockedCrate(command) && (command.includes("last") || command.includes("was") || command.includes("just"))) {
-        calibrateMapEvent("lockedcrate");
+      // ---- CALIBRATE: LOCKED CRATE ----
+      if ((cmdHasLockedCrate(command) || command.includes("crate")) && (command.includes("calibrate") || command.includes("calibration") || command.includes("last") || command.includes("was") || command.includes("just"))) {
+        setLastEvent("lockedcrate");
         return;
       }
 
@@ -1992,7 +1984,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       function answerNextEvent() {
         const nextEvent = getNextMapEvent();
         if (!nextEvent) {
-          speakText("Not calibrated yet.");
+          speakText("Not calibrated yet. In 5 minutes, not calibrated drop arrives.");
           return;
         }
         const remaining = Math.max(0, nextEvent.nextEventTime - Date.now());
@@ -2002,7 +1994,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       function answerNextSpecificEvent(eventType) {
         const nextEvent = getNextMapEvent();
         if (!nextEvent) {
-          speakText("Not calibrated yet.");
+          speakText("Not calibrated yet. In 5 minutes, not calibrated drop arrives.");
           return;
         }
         if (nextEvent.nextEventType === eventType) {
@@ -2015,32 +2007,15 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         }
       }
 
-      function answerNotCalibratedDrop(durationMs) {
-        if (durationMs) {
-          speakText(`In ${formatDurationSpeech(durationMs)}, not calibrated drop arrives.`);
-          return;
-        }
-        speakText("Not calibrated yet.");
-      }
-
       const wantsNext = command.includes("next") || command.includes("when") || command.includes("upcoming") || command.includes("what is") || command.includes("whats");
       const wantsEvent = command.includes("event") || command.includes("map");
-      const wantsArrivalTiming = command.includes("drops in") || command.includes("drop in") || command.includes("arrives in") || command.includes("arrive in") || command.includes("in ");
 
-      if (cmdHasAirdrop(command) && (wantsNext || wantsArrivalTiming)) {
-        if (!hasCalibratedMapEvent()) {
-          answerNotCalibratedDrop(extractDurationMsFromText(command));
-          return;
-        }
+      if (cmdHasAirdrop(command) && wantsNext) {
         answerNextSpecificEvent("airdrop");
         return;
       }
 
-      if (cmdHasLockedCrate(command) && (wantsNext || wantsArrivalTiming)) {
-        if (!hasCalibratedMapEvent()) {
-          answerNotCalibratedDrop(extractDurationMsFromText(command));
-          return;
-        }
+      if (cmdHasLockedCrate(command) && wantsNext) {
         answerNextSpecificEvent("lockedcrate");
         return;
       }
@@ -2132,8 +2107,8 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         { score: (cmdHasLockedCrate(command) ? 2 : 0) + (cmdHasTimeLeft(command) ? 2 : 0), action: () => answerLockedcrateTimer() },
         { score: cmdHasVault(command) && cmdHasStart(command) ? 4 : 0, action: () => startVaultTimer() },
         { score: cmdHasLockedCrate(command) && cmdHasStart(command) ? 4 : 0, action: () => startTimer(15 * 60 * 1000, "Lockedcrate Timer") },
-        { score: cmdHasAirdrop(command) ? 2 : 0, action: () => calibrateMapEvent("airdrop") },
-        { score: cmdHasLockedCrate(command) ? 2 : 0, action: () => calibrateMapEvent("lockedcrate") },
+        { score: cmdHasAirdrop(command) ? 2 : 0, action: () => setLastEvent("airdrop") },
+        { score: cmdHasLockedCrate(command) ? 2 : 0, action: () => setLastEvent("lockedcrate") },
         { score: cmdHasRefresh(command) ? 3 : 0, action: () => { refreshServers(); speakText("Refreshing server data."); } },
         { score: cmdHasTimer(command) ? 2 : 0, action: () => answerBothTimers() },
         { score: (command.includes("next") || command.includes("event")) ? 2 : 0, action: () => { const ne = getNextMapEvent(); if (ne) { const r = Math.max(0, ne.nextEventTime - Date.now()); speakText(`Next event is ${formatEventName(ne.nextEventType)} in ${formatDurationSpeech(r)}.`); } else { answerServerPop(getMainServer()); } } },
@@ -2202,7 +2177,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         recognition.addEventListener("start", () => {
           recognitionActive = true;
           heardWakePhrase = false;
-          setListeningStatus("Voice commands are armed. Say Jarvis for commands or coms to mute.");
+          setListeningStatus("Voice commands are armed. Say hey Jarvis or say comms.");
         });
 
         recognition.addEventListener("result", (event) => {
@@ -2236,7 +2211,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
           if (listeningEnabled && !manualStop) {
             heardWakePhrase = false;
             hideVoiceOrb(0);
-            setListeningStatus("Voice commands are armed. Say Jarvis for commands or coms to mute.");
+            setListeningStatus("Voice commands are armed. Say hey Jarvis or say comms.");
             recognition.start();
             return;
           }
@@ -2274,6 +2249,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       }
 
       updateMainServerDisplay();
+      syncMapEventCalibrationWithServer(getMainServer());
       updateEventDisplay();
     }
 
@@ -2304,6 +2280,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
         if (activeServer) {
           updateServerDetails(activeServer);
           setStatus(`Showing live population for ${activeServer.name}.`);
+          syncMapEventCalibrationWithServer(activeServer);
         }
 
         const activeMainServer = servers.find((server) => server.name === getMainServerName()) || activeServer || null;
@@ -2315,6 +2292,7 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
 
           mainServerPreviousPlayerCount = activeMainServer.playerCount;
           updateMainServerDisplay();
+          syncMapEventCalibrationWithServer(activeMainServer);
         }
 
         updateLastUpdated();
@@ -2333,11 +2311,12 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
       setStatus(selectedServer
         ? `Showing live population for ${selectedServer.name}.`
         : "Choose a server to view its population.");
+      syncMapEventCalibrationWithServer(selectedServer);
       updateEventDisplay();
     }
 
     function handleLastEventSelection() {
-      calibrateMapEvent(elements.lastEventSelect.value, false);
+      setLastEvent(elements.lastEventSelect.value, false);
     }
 
     function handleTimerStart() {
@@ -2366,12 +2345,8 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     function startAuxiliaryTickers() {
       clearInterval(eventTicker);
       clearInterval(timerTicker);
-      eventTicker = setInterval(() => {
-        updateCommsSilenceState();
-        updateEventDisplay();
-      }, 1000);
+      eventTicker = setInterval(updateEventDisplay, 1000);
       timerTicker = setInterval(() => {
-        updateCommsSilenceState();
         updateTimerDisplay();
         updateVaultDisplay();
       }, 1000);
@@ -2426,8 +2401,8 @@ Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands
     updateSpeechButton();
     updateListeningButton();
     updateWakeLockButton();
-    elements.wakePhrase.textContent = "Coms";
-    elements.lastEventSelect.value = lastEventType || "airdrop";
+    elements.wakePhrase.textContent = "Jarvis";
+    elements.lastEventSelect.value = mapEventCalibration || "airdrop";
     populateVoiceSelect();
     if ("speechSynthesis" in window) {
       window.speechSynthesis.addEventListener("voiceschanged", populateVoiceSelect);
