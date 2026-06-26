@@ -18,9 +18,7 @@
       --shadow: 0 24px 60px rgba(0, 0, 0, 0.35);
     }
 
-    * {
-      box-sizing: border-box;
-    }
+    * { box-sizing: border-box; }
 
     body {
       margin: 0;
@@ -32,44 +30,125 @@
         radial-gradient(circle at bottom right, rgba(125, 249, 193, 0.12), transparent 24%),
         linear-gradient(140deg, var(--bg-1), var(--bg-2));
       display: grid;
-      place-items: center;
+      place-items: start center;
       padding: 24px;
     }
 
     .card {
-      width: min(100%, 760px);
+      width: min(100%, 820px);
       background: var(--panel);
       border: 1px solid var(--panel-border);
       border-radius: 24px;
-      padding: 28px;
+      padding: 24px 28px 28px;
       box-shadow: var(--shadow);
       backdrop-filter: blur(14px);
     }
 
-    .hero-grid {
+    /* ── TOP SUMMARY STRIP ──────────────────────────────── */
+    .summary-strip {
       display: grid;
-      grid-template-columns: 0.95fr 1.05fr;
-      gap: 18px;
-      margin-top: 24px;
-      align-items: start;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 10px;
+      margin-top: 20px;
     }
 
-    .column {
+    .summary-cell {
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 6px;
+      min-height: 110px;
+      justify-content: center;
+    }
+
+    .summary-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.14em;
+      color: var(--muted);
+    }
+
+    .summary-value {
+      font-size: 1.55rem;
+      font-weight: 800;
+      line-height: 1;
+      color: var(--text);
+    }
+
+    .summary-sub {
+      font-size: 0.68rem;
+      color: var(--muted);
+      text-align: center;
+    }
+
+    /* Mini ring for summary */
+    .mini-ring-wrap {
+      position: relative;
+      width: 54px;
+      height: 54px;
+      flex-shrink: 0;
+    }
+
+    .mini-ring-svg {
+      width: 54px;
+      height: 54px;
+      transform: rotate(-90deg);
+    }
+
+    .mini-ring-bg {
+      fill: none;
+      stroke: rgba(255,255,255,0.08);
+      stroke-width: 4;
+    }
+
+    .mini-ring-fg {
+      fill: none;
+      stroke: var(--accent-2);
+      stroke-width: 4;
+      stroke-linecap: round;
+      stroke-dasharray: 138.2; /* 2π×22 */
+      stroke-dashoffset: 138.2;
+      transition: stroke-dashoffset 0.4s ease;
+    }
+
+    .mini-ring-fg.vault { stroke: var(--accent); }
+
+    .mini-ring-text {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.62rem;
+      font-weight: 700;
+      line-height: 1.1;
+      color: var(--text);
+      text-align: center;
+    }
+
+    /* ── MAIN GRID ──────────────────────────────────────── */
+    .main-grid {
       display: grid;
-      gap: 18px;
+      grid-template-columns: 1fr 1fr;
+      gap: 14px;
+      margin-top: 14px;
     }
 
     .panel {
-      padding: 20px;
-      border-radius: 20px;
-      background: rgba(255, 255, 255, 0.045);
-      border: 1px solid rgba(255, 255, 255, 0.08);
-      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      padding: 18px 20px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.045);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .panel h2 {
-      margin: 0 0 10px;
-      font-size: 1.05rem;
+      margin: 0 0 12px;
+      font-size: 0.95rem;
       letter-spacing: 0.02em;
     }
 
@@ -78,13 +157,12 @@
       align-items: center;
       justify-content: space-between;
       gap: 12px;
-      margin-bottom: 10px;
+      margin-bottom: 12px;
     }
 
-    .panel-head h2 {
-      margin: 0;
-    }
+    .panel-head h2 { margin: 0; }
 
+    /* info dot */
     .info-wrap {
       position: relative;
       display: inline-flex;
@@ -93,16 +171,14 @@
     }
 
     .info-dot {
-      width: 28px;
-      height: 28px;
+      width: 24px; height: 24px;
       border-radius: 50%;
       display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      border: 1px solid rgba(170, 216, 255, 0.2);
-      background: rgba(255, 255, 255, 0.05);
+      align-items: center; justify-content: center;
+      border: 1px solid rgba(170,216,255,0.2);
+      background: rgba(255,255,255,0.05);
       color: #dff1ff;
-      font-size: 0.95rem;
+      font-size: 0.85rem;
       font-weight: 700;
       cursor: default;
       user-select: none;
@@ -115,12 +191,12 @@
       width: min(320px, 72vw);
       padding: 12px 14px;
       border-radius: 14px;
-      background: rgba(7, 17, 31, 0.96);
-      border: 1px solid rgba(170, 216, 255, 0.2);
+      background: rgba(7,17,31,0.96);
+      border: 1px solid rgba(170,216,255,0.2);
       color: var(--muted);
-      font-size: 0.88rem;
-      line-height: 1.45;
-      box-shadow: 0 16px 32px rgba(0, 0, 0, 0.28);
+      font-size: 0.84rem;
+      line-height: 1.5;
+      box-shadow: 0 16px 32px rgba(0,0,0,0.28);
       opacity: 0;
       transform: translateY(-4px);
       pointer-events: none;
@@ -129,50 +205,48 @@
       white-space: pre-line;
     }
 
-    .info-wrap:hover .info-tip {
-      opacity: 1;
-      transform: translateY(0);
-    }
+    .info-wrap:hover .info-tip { opacity: 1; transform: translateY(0); }
 
     h1 {
-      margin: 0 0 8px;
-      font-size: clamp(2rem, 4vw, 3rem);
+      margin: 0 0 6px;
+      font-size: clamp(1.6rem, 3.5vw, 2.4rem);
       letter-spacing: 0.02em;
     }
 
     p {
       margin: 0;
       color: var(--muted);
+      font-size: 0.88rem;
       line-height: 1.5;
     }
 
     .controls {
       display: grid;
       grid-template-columns: 1fr auto;
-      gap: 14px;
-      margin-top: 24px;
+      gap: 10px;
+      margin-top: 12px;
     }
 
-    select,
-    button {
+    .controls.full { grid-template-columns: 1fr; }
+    .controls.pair { grid-template-columns: 1fr 1fr; }
+
+    select, button {
       width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 11px 14px;
       font: inherit;
+      font-size: 0.88rem;
       color: var(--text);
-      background: rgba(255, 255, 255, 0.06);
+      background: rgba(255,255,255,0.06);
     }
 
     select {
+      background-color: rgba(8,17,31,0.95);
       color: var(--text);
-      background-color: rgba(8, 17, 31, 0.95);
     }
 
-    option {
-      color: var(--text);
-      background-color: #0d1a2b;
-    }
+    option { color: var(--text); background-color: #0d1a2b; }
 
     button {
       width: auto;
@@ -180,179 +254,90 @@
       transition: transform 160ms ease, background 160ms ease;
     }
 
-    button:hover {
-      transform: translateY(-1px);
-      background: rgba(255, 255, 255, 0.12);
-    }
+    button:hover { transform: translateY(-1px); background: rgba(255,255,255,0.12); }
 
     .stats {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-      gap: 16px;
-      margin-top: 24px;
+      grid-template-columns: repeat(auto-fit, minmax(120px,1fr));
+      gap: 10px;
+      margin-top: 12px;
     }
 
     .stat {
-      padding: 18px;
-      border-radius: 18px;
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 12px 14px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.08);
     }
 
     .label {
       color: var(--muted);
-      font-size: 0.92rem;
-      margin-bottom: 8px;
+      font-size: 0.8rem;
+      margin-bottom: 5px;
     }
 
     .value {
-      font-size: clamp(1.6rem, 4vw, 2.4rem);
+      font-size: 1.4rem;
       font-weight: 700;
     }
 
     .status {
-      margin-top: 18px;
-      padding: 14px 16px;
-      border-radius: 14px;
-      background: rgba(255, 255, 255, 0.04);
+      margin-top: 10px;
+      padding: 10px 14px;
+      border-radius: 12px;
+      background: rgba(255,255,255,0.04);
       color: var(--muted);
+      font-size: 0.84rem;
     }
 
     .status.error {
       color: var(--danger);
-      border: 1px solid rgba(255, 129, 129, 0.24);
+      border: 1px solid rgba(255,129,129,0.24);
     }
 
     .footer {
-      margin-top: 18px;
-      font-size: 0.92rem;
+      margin-top: 14px;
+      font-size: 0.84rem;
       color: var(--muted);
     }
 
-    .stack {
-      display: grid;
-      gap: 12px;
-      margin-top: 24px;
-    }
-
-    .compact-stack {
-      display: grid;
-      gap: 12px;
-    }
+    .stack { display: grid; gap: 10px; margin-top: 12px; }
+    .compact-stack { display: grid; gap: 10px; }
 
     .input {
       width: 100%;
-      border: 1px solid rgba(255, 255, 255, 0.12);
-      border-radius: 14px;
-      padding: 14px 16px;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 12px;
+      padding: 11px 14px;
       font: inherit;
-      color: var(--text);
-      background: rgba(8, 17, 31, 0.95);
-    }
-
-    .timer-visual {
-      position: relative;
-      display: grid;
-      place-items: center;
-      min-height: 240px;
-      border-radius: 22px;
-      background:
-        radial-gradient(circle at 50% 18%, rgba(95, 176, 255, 0.16), transparent 28%),
-        radial-gradient(circle at center, rgba(84, 184, 255, 0.08), transparent 54%),
-        linear-gradient(180deg, rgba(84, 184, 255, 0.08), rgba(255, 255, 255, 0.02));
-      overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.08);
-    }
-
-    .timer-visual::before {
-      content: "";
-      position: absolute;
-      width: 188px;
-      height: 188px;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background:
-        conic-gradient(
-          from -90deg,
-          rgba(118, 204, 255, 1) 0deg,
-          rgba(79, 166, 255, 0.98) calc(var(--timer-progress, 100) * 3.6deg),
-          rgba(255, 255, 255, 0.08) calc(var(--timer-progress, 100) * 3.6deg),
-          rgba(255, 255, 255, 0.08) 360deg
-        );
-      box-shadow:
-        0 0 0 1px rgba(255, 255, 255, 0.06),
-        0 0 28px rgba(84, 184, 255, 0.18),
-        inset 0 0 18px rgba(120, 190, 255, 0.12);
-      transition: background 180ms linear, box-shadow 180ms linear;
-    }
-
-    .timer-visual::after {
-      content: "";
-      position: absolute;
-      width: 144px;
-      height: 144px;
-      border-radius: 50%;
-      top: 50%;
-      left: 50%;
-      transform: translate(-50%, -50%);
-      background:
-        radial-gradient(circle at top, rgba(84, 184, 255, 0.08), transparent 55%),
-        rgba(5, 15, 27, 0.96);
-      border: 1px solid rgba(255, 255, 255, 0.07);
-      box-shadow: inset 0 0 24px rgba(0, 0, 0, 0.22);
-    }
-
-    .timer-core {
-      position: relative;
-      z-index: 1;
-      text-align: center;
-      display: grid;
-      gap: 4px;
-      width: 120px;
-    }
-
-    .timer-kicker {
-      color: var(--muted);
-      font-size: 0.72rem;
-      text-transform: uppercase;
-      letter-spacing: 0.18em;
-    }
-
-    .timer-big {
-      font-size: clamp(2.4rem, 5vw, 3.6rem);
-      font-weight: 800;
-      line-height: 1;
-      text-shadow: 0 0 24px rgba(84, 184, 255, 0.16);
-    }
-
-    .timer-sub {
-      color: var(--muted);
       font-size: 0.88rem;
-      text-align: center;
-      max-width: 260px;
-      margin: 0 auto;
+      color: var(--text);
+      background: rgba(8,17,31,0.95);
     }
 
+    /* plain timer display (replaces fancy ring in panels) */
+    .plain-timer {
+      font-size: 2.2rem;
+      font-weight: 800;
+      letter-spacing: 0.04em;
+      color: var(--accent-2);
+      text-align: center;
+      padding: 10px 0 4px;
+      line-height: 1;
+    }
+
+    .plain-timer.vault { color: var(--accent); }
+    .plain-timer.idle { color: var(--muted); font-size: 1.4rem; font-weight: 500; }
+
+    /* bottom detail row */
     .detail-grid {
       display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 18px;
-      margin-top: 18px;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 14px;
+      margin-top: 14px;
     }
 
-    .mini-grid {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 16px;
-    }
-
-    .single-stat {
-      margin-top: 0;
-      grid-template-columns: 1fr;
-    }
-
+    /* voice orb */
     .voice-orb-wrap {
       position: fixed;
       inset: 0;
@@ -364,86 +349,64 @@
       transition: opacity 180ms ease;
     }
 
-    .voice-orb-wrap.visible {
-      opacity: 1;
-    }
+    .voice-orb-wrap.visible { opacity: 1; }
 
     .voice-orb {
-      width: 150px;
-      height: 150px;
+      width: 130px; height: 130px;
       border-radius: 50%;
       position: relative;
       display: grid;
       place-items: center;
       background:
-        radial-gradient(circle at 35% 28%, rgba(255, 255, 255, 0.3), transparent 20%),
-        radial-gradient(circle at center, rgba(100, 190, 255, 0.28), rgba(7, 17, 31, 0.92) 62%);
-      border: 1px solid rgba(170, 216, 255, 0.2);
-      box-shadow:
-        0 0 42px rgba(84, 184, 255, 0.2),
-        inset 0 0 26px rgba(125, 200, 255, 0.14);
+        radial-gradient(circle at 35% 28%, rgba(255,255,255,0.3), transparent 20%),
+        radial-gradient(circle at center, rgba(100,190,255,0.28), rgba(7,17,31,0.92) 62%);
+      border: 1px solid rgba(170,216,255,0.2);
+      box-shadow: 0 0 42px rgba(84,184,255,0.2), inset 0 0 26px rgba(125,200,255,0.14);
       backdrop-filter: blur(12px);
       transform: scale(0.96);
     }
 
-    .voice-orb::before,
-    .voice-orb::after {
+    .voice-orb::before, .voice-orb::after {
       content: "";
       position: absolute;
-      inset: -14px;
+      inset: -12px;
       border-radius: 50%;
-      border: 1px solid rgba(155, 215, 255, 0.18);
+      border: 1px solid rgba(155,215,255,0.18);
       opacity: 0.72;
     }
 
-    .voice-orb::after {
-      inset: -28px;
-      border-color: rgba(112, 186, 255, 0.14);
-    }
+    .voice-orb::after { inset: -24px; border-color: rgba(112,186,255,0.14); }
 
-    .voice-orb-wrap.listening .voice-orb {
-      animation: orb-listen 1.8s ease-in-out infinite;
-    }
-
-    .voice-orb-wrap.speaking .voice-orb {
-      animation: orb-talk 0.9s ease-in-out infinite;
-    }
+    .voice-orb-wrap.listening .voice-orb { animation: orb-listen 1.8s ease-in-out infinite; }
+    .voice-orb-wrap.speaking .voice-orb { animation: orb-talk 0.9s ease-in-out infinite; }
 
     .voice-orb-text {
       position: relative;
       z-index: 1;
-      font-size: 0.82rem;
-      letter-spacing: 0.28em;
+      font-size: 0.78rem;
+      letter-spacing: 0.26em;
       text-transform: uppercase;
       color: #e9f4ff;
-      text-shadow: 0 0 14px rgba(84, 184, 255, 0.24);
+      text-shadow: 0 0 14px rgba(84,184,255,0.24);
     }
 
     @keyframes orb-listen {
-      0%, 100% { transform: scale(0.96); box-shadow: 0 0 42px rgba(84, 184, 255, 0.2), inset 0 0 26px rgba(125, 200, 255, 0.14); }
-      50% { transform: scale(1.03); box-shadow: 0 0 58px rgba(84, 184, 255, 0.3), inset 0 0 34px rgba(125, 200, 255, 0.22); }
+      0%,100% { transform: scale(0.96); box-shadow: 0 0 42px rgba(84,184,255,0.2), inset 0 0 26px rgba(125,200,255,0.14); }
+      50% { transform: scale(1.03); box-shadow: 0 0 58px rgba(84,184,255,0.3), inset 0 0 34px rgba(125,200,255,0.22); }
     }
 
     @keyframes orb-talk {
-      0%, 100% { transform: scale(0.95) translateY(0); border-radius: 50%; }
-      25% { transform: scale(1.05, 0.92) translateY(1px); border-radius: 46% 54% 50% 50%; }
-      50% { transform: scale(0.98, 1.06) translateY(-1px); border-radius: 54% 46% 48% 52%; }
-      75% { transform: scale(1.04, 0.94) translateY(1px); border-radius: 49% 51% 55% 45%; }
+      0%,100% { transform: scale(0.95); border-radius: 50%; }
+      25% { transform: scale(1.05,0.92); border-radius: 46% 54% 50% 50%; }
+      50% { transform: scale(0.98,1.06); border-radius: 54% 46% 48% 52%; }
+      75% { transform: scale(1.04,0.94); border-radius: 49% 51% 55% 45%; }
     }
 
-    @media (max-width: 640px) {
-      .hero-grid,
-      .detail-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .controls {
-        grid-template-columns: 1fr;
-      }
-
-      button {
-        width: 100%;
-      }
+    @media (max-width: 620px) {
+      .summary-strip { grid-template-columns: repeat(2,1fr); }
+      .main-grid, .detail-grid { grid-template-columns: 1fr; }
+      .controls { grid-template-columns: 1fr; }
+      button { width: 100%; }
     }
   </style>
 </head>
@@ -456,184 +419,220 @@
 
   <main class="card">
     <h1>Server Pop Tracker</h1>
-    <p>Main server, timer, and event tracking stay up top so the important stuff is visible in one glance. Voice and extra detail live lower on the dashboard.</p>
+    <p>Say <strong>Jarvis</strong> to give a command. Key info is in the strip below.</p>
 
-    <section class="hero-grid" aria-label="Main Dashboard">
-      <div class="column">
-        <section class="panel" aria-label="Main Server Controls">
-          <div class="panel-head">
-            <h2>Main Server</h2>
-            <div class="info-wrap">
-              <div class="info-dot">i</div>
-              <div class="info-tip">Shows live player count for your selected main server. Auto-refreshes every 15 seconds.
+    <!-- ── TOP SUMMARY STRIP ── -->
+    <div class="summary-strip" aria-label="At-a-glance summary">
 
-Voice commands — say <strong>Jarvis</strong> then:
+      <!-- Pop -->
+      <div class="summary-cell">
+        <div class="summary-label">Players Online</div>
+        <div class="summary-value" id="summaryPop">--</div>
+        <div class="summary-sub" id="summaryServer">--</div>
+      </div>
+
+      <!-- Vault ring -->
+      <div class="summary-cell">
+        <div class="summary-label">Vault</div>
+        <div class="mini-ring-wrap">
+          <svg class="mini-ring-svg" viewBox="0 0 54 54">
+            <circle class="mini-ring-bg" cx="27" cy="27" r="22"/>
+            <circle class="mini-ring-fg vault" id="summaryVaultRing" cx="27" cy="27" r="22"/>
+          </svg>
+          <div class="mini-ring-text" id="summaryVaultText">--</div>
+        </div>
+        <div class="summary-sub" id="summaryVaultSub">idle</div>
+      </div>
+
+      <!-- Lockedcrate ring -->
+      <div class="summary-cell">
+        <div class="summary-label">Lockedcrate</div>
+        <div class="mini-ring-wrap">
+          <svg class="mini-ring-svg" viewBox="0 0 54 54">
+            <circle class="mini-ring-bg" cx="27" cy="27" r="22"/>
+            <circle class="mini-ring-fg" id="summaryTimerRing" cx="27" cy="27" r="22"/>
+          </svg>
+          <div class="mini-ring-text" id="summaryTimerText">--</div>
+        </div>
+        <div class="summary-sub" id="summaryTimerSub">idle</div>
+      </div>
+
+      <!-- Next event -->
+      <div class="summary-cell">
+        <div class="summary-label">Next Event</div>
+        <div class="summary-value" id="summaryNextEvent">--</div>
+        <div class="summary-sub" id="summaryNextEta">--</div>
+      </div>
+    </div>
+
+    <!-- ── MAIN PANELS GRID ── -->
+    <div class="main-grid">
+
+      <!-- Main Server -->
+      <section class="panel" aria-label="Main Server">
+        <div class="panel-head">
+          <h2>Main Server</h2>
+          <div class="info-wrap">
+            <div class="info-dot">i</div>
+            <div class="info-tip">Shows live player count for your selected main server. Auto-refreshes every 15 s.
+
+Voice — say <strong>Jarvis</strong> then:
 · <em>what pop</em> — current player count
 · <em>switch to EU1</em> — change main server
 · <em>set main server to NA2</em> — change main server
 · <em>refresh</em> — force a data update</div>
-            </div>
           </div>
+        </div>
+        <div class="controls">
+          <select id="mainServerSelect" aria-label="Choose the main server">
+            <option>Loading servers...</option>
+          </select>
+          <button id="refreshButton" type="button">Refresh</button>
+        </div>
+        <div class="stats">
+          <div class="stat">
+            <div class="label">Players Online</div>
+            <div class="value" id="playerCount">--</div>
+          </div>
+          <div class="stat">
+            <div class="label">Server</div>
+            <div class="value" id="mainServerName" style="font-size:1rem;font-weight:600;">--</div>
+          </div>
+        </div>
+        <div class="status" id="status">Fetching server data...</div>
+        <div class="footer" id="lastUpdated">Last updated: --</div>
+      </section>
+
+      <!-- Map Events -->
+      <section class="panel" aria-label="Map Events">
+        <div class="panel-head">
+          <h2>Map Events</h2>
+          <div class="info-wrap">
+            <div class="info-dot">i</div>
+            <div class="info-tip">Tracks the hourly map-event rotation. Set the last event once and it auto-tracks.
+
+Voice — say <strong>Jarvis</strong> then:
+· <em>airdrop was last</em>
+· <em>locked crate was last</em>
+· <em>what is next</em> — next event + ETA
+· <em>when is next airdrop</em>
+· <em>when is next locked crate</em></div>
+          </div>
+        </div>
+        <div class="compact-stack">
           <div class="controls">
-            <select id="mainServerSelect" aria-label="Choose the main server">
-              <option>Loading servers...</option>
+            <select id="lastEventSelect" aria-label="Choose the last map event">
+              <option value="airdrop">Airdrop was last</option>
+              <option value="lockedcrate">Locked crate was last</option>
             </select>
-            <button id="refreshButton" type="button">Refresh now</button>
+            <button id="setLastEventButton" type="button">Set</button>
           </div>
           <div class="stats">
             <div class="stat">
-              <div class="label">Players Online</div>
-              <div class="value" id="playerCount">--</div>
+              <div class="label">Last Event</div>
+              <div class="value" id="lastEventName" style="font-size:1rem;font-weight:600;">--</div>
             </div>
             <div class="stat">
-              <div class="label">Main Server</div>
-              <div class="value" id="mainServerName" style="font-size: 1rem; font-weight: 600;">--</div>
+              <div class="label">Next Event</div>
+              <div class="value" id="nextEventName" style="font-size:1rem;font-weight:600;">--</div>
+            </div>
+            <div class="stat">
+              <div class="label">ETA</div>
+              <div class="value" id="nextEventEta" style="font-size:1rem;font-weight:600;">--</div>
             </div>
           </div>
-        </section>
+          <div class="status" id="eventStatus">Map event tracking is idle.</div>
+        </div>
+      </section>
 
-        <section class="panel" aria-label="Map Event Tracker">
-          <div class="panel-head">
-            <h2>Map Events</h2>
-            <div class="info-wrap">
-              <div class="info-dot">i</div>
-              <div class="info-tip">Tracks the hourly map-event rotation anchored to your main server's wipe time. Set the last event once and it auto-tracks the rotation.
+      <!-- Lockedcrate Timer -->
+      <section class="panel" aria-label="Lockedcrate Timer">
+        <div class="panel-head">
+          <h2>Lockedcrate Timer</h2>
+          <div class="info-wrap">
+            <div class="info-dot">i</div>
+            <div class="info-tip">Manual lockedcrate countdown. Default 15 min. Jarvis announces when it opens.
 
-Voice commands — say <strong>Jarvis</strong> then:
-· <em>airdrop was last</em> — mark airdrop as just happened
-· <em>locked crate was last</em> — mark locked crate as just happened
-· <em>what is next</em> — hear the next event and ETA
-· <em>when is next airdrop</em> — ETA for next airdrop
-· <em>when is next locked crate</em> — ETA for next locked crate
-· <em>how long until next event</em> — time remaining</div>
+Voice — say <strong>Jarvis</strong> then:
+· <em>start locked crate timer</em>
+· <em>start timer</em> / <em>crate timer</em> / <em>begin timer</em>
+· <em>stop timer</em> / <em>cancel timer</em>
+· <em>how long left</em> / <em>timer status</em>
+· <em>how much time on the timer</em></div>
+          </div>
+        </div>
+        <div class="compact-stack">
+          <div class="plain-timer idle" id="timerDisplay">--:--</div>
+          <div class="status" id="timerStatus">No active timer.</div>
+          <div class="controls">
+            <input id="timerInput" class="input" type="text" placeholder="15:00" value="15:00">
+            <button id="setTimerButton" type="button">Start</button>
+          </div>
+          <div class="controls pair">
+            <button id="stopTimerButton" type="button">Stop timer</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Vault Timer -->
+      <section class="panel" aria-label="Vault Tracker">
+        <div class="panel-head">
+          <h2>Vault Tracker</h2>
+          <div class="info-wrap">
+            <div class="info-dot">i</div>
+            <div class="info-tip">Tracks vault open time. Close time adjusts live with pop. Jarvis speaks at 5 min and on close.
+
+Voice — say <strong>Jarvis</strong> then:
+· <em>start vault timer</em> / <em>vault opened</em> / <em>vault is open</em>
+· <em>stop vault timer</em> / <em>cancel vault</em>
+· <em>how long left on vault</em> / <em>vault time left</em>
+· <em>vault estimate</em> / <em>what would the vault timer be</em></div>
+          </div>
+        </div>
+        <div class="compact-stack">
+          <div class="plain-timer vault idle" id="vaultDisplay">--:--</div>
+          <div class="status" id="vaultStatus">Vault timer is idle.</div>
+          <div class="controls pair">
+            <button id="startVaultButton" type="button">Start vault</button>
+            <button id="stopVaultButton" type="button">Stop vault</button>
+          </div>
+          <div class="stats">
+            <div class="stat">
+              <div class="label">Vault Remaining</div>
+              <div class="value" id="vaultRemaining" style="font-size:1rem;font-weight:600;">--</div>
             </div>
           </div>
-          <div class="compact-stack">
-            <div class="status" id="eventStatus">Map event tracking is idle.</div>
-            <div class="controls">
-              <select id="lastEventSelect" aria-label="Choose the last map event">
-                <option value="airdrop">Airdrop was last</option>
-                <option value="lockedcrate">Locked crate was last</option>
-              </select>
-              <button id="setLastEventButton" type="button">Set last event</button>
-            </div>
-            <div class="stats">
-              <div class="stat">
-                <div class="label">Last Event</div>
-                <div class="value" id="lastEventName" style="font-size: 1rem; font-weight: 600;">--</div>
-              </div>
-              <div class="stat">
-                <div class="label">Next Event</div>
-                <div class="value" id="nextEventName" style="font-size: 1rem; font-weight: 600;">--</div>
-              </div>
-              <div class="stat">
-                <div class="label">Next Event ETA</div>
-                <div class="value" id="nextEventEta" style="font-size: 1rem; font-weight: 600;">--</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
+        </div>
+      </section>
+    </div>
 
-      <div class="column">
-        <section class="panel" aria-label="Timer Tracker">
-          <div class="panel-head">
-            <h2>Lockedcrate Timer</h2>
-            <div class="info-wrap">
-              <div class="info-dot">i</div>
-              <div class="info-tip">Manual lockedcrate countdown. Default is 15 minutes. Jarvis will announce when it finishes.
-
-Voice commands — say <strong>Jarvis</strong> then:
-· <em>start locked crate timer</em> — starts 15 min timer
-· <em>stop timer</em> — cancels the timer
-· <em>how long left on locked crate</em> — remaining time
-· <em>timer status</em> — check all active timers</div>
-            </div>
-          </div>
-          <div class="compact-stack">
-            <div class="timer-visual" id="timerVisual">
-              <div class="timer-core">
-                <div class="timer-kicker" id="timerLabelDisplay">Lockedcrate Timer</div>
-                <div class="timer-big" id="timerHeroRemaining">--</div>
-              </div>
-            </div>
-            <div class="timer-sub" id="timerHeroSubtext">Start the lockedcrate timer to see the countdown ring.</div>
-            <div class="status" id="timerStatus">No active timer.</div>
-            <div class="controls">
-              <input id="timerInput" class="input" type="text" placeholder="15:00" value="15:00">
-              <button id="setTimerButton" type="button">Start timer</button>
-            </div>
-            <div class="controls">
-              <button id="stopTimerButton" type="button">Stop timer</button>
-            </div>
-            <div class="stats">
-              <div class="stat">
-                <div class="label">Timer Remaining</div>
-                <div class="value" id="timerRemaining" style="font-size: 1rem; font-weight: 600;">--</div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        <section class="panel">
-          <div class="panel-head">
-            <h2>Vault Tracker</h2>
-            <div class="info-wrap">
-              <div class="info-dot">i</div>
-              <div class="info-tip">Tracks how long a vault stays open on the main server. Close time adjusts live as player count changes. Jarvis announces when the vault closes and at 5 minutes remaining.
-
-Voice commands — say <strong>Jarvis</strong> then:
-· <em>start vault timer</em> — vault just opened
-· <em>stop vault timer</em> — cancel vault tracking
-· <em>how long left on vault</em> — remaining open time
-· <em>what would the vault timer be</em> — estimate based on current pop</div>
-            </div>
-          </div>
-          <div class="compact-stack">
-            <div class="status" id="vaultStatus">Vault timer is idle.</div>
-            <div class="controls">
-              <button id="startVaultButton" type="button">Start vault timer</button>
-              <button id="stopVaultButton" type="button">Stop vault timer</button>
-            </div>
-            <div class="stats single-stat">
-              <div class="stat">
-                <div class="label">Vault Remaining</div>
-                <div class="value" id="vaultRemaining" style="font-size: 1rem; font-weight: 600;">--</div>
-              </div>
-            </div>
-          </div>
-        </section>
-      </div>
-    </section>
-
-    <section class="detail-grid" aria-label="Detail Panels">
+    <!-- ── VOICE PANELS ── -->
+    <div class="detail-grid">
       <section class="panel">
         <div class="panel-head">
           <h2>Voice Controls</h2>
           <div class="info-wrap">
             <div class="info-dot">i</div>
-              <div class="info-tip">Controls the speaking voice and whether Jarvis is listening for commands. Wake word is <strong>Jarvis</strong> — say it before any command.
+            <div class="info-tip">Wake word: <strong>Jarvis</strong> — say it alone and Jarvis asks "Yeah?" then waits for your command.
 
-Voice commands — say <strong>Jarvis</strong> then:
-· <em>speech on / speech off</em> — toggle voice responses
-· <em>voice commands on / off</em> — toggle listening
-· <em>keep awake on / off</em> — prevent screen sleep</div>
+Voice — say <strong>Jarvis</strong> then:
+· <em>speech on / off</em>
+· <em>voice commands on / off</em>
+· <em>keep awake on / off</em></div>
           </div>
         </div>
         <div class="compact-stack">
-          <div class="controls" aria-label="Speech Controls">
-            <select id="voiceSelect" aria-label="Choose a voice">
-              <option>Loading voices...</option>
-            </select>
+          <div class="controls">
+            <select id="voiceSelect" aria-label="Choose a voice"><option>Loading voices...</option></select>
             <button id="toggleSpeechButton" type="button">Speech: On</button>
           </div>
-          <div class="controls" aria-label="Voice Command Controls">
+          <div class="controls">
             <button id="toggleListeningButton" type="button">Voice Commands: Off</button>
             <div class="status" id="listeningStatus">Voice commands are idle.</div>
           </div>
-          <div class="controls" aria-label="Wake Lock Controls">
+          <div class="controls">
             <button id="toggleWakeLockButton" type="button">Keep Awake: Off</button>
-            <div class="status">Keeps the screen awake while this page stays open and visible.</div>
+            <div class="status">Keeps screen awake while visible.</div>
           </div>
         </div>
       </section>
@@ -643,27 +642,23 @@ Voice commands — say <strong>Jarvis</strong> then:
           <h2>Voice Detail</h2>
           <div class="info-wrap">
             <div class="info-dot">i</div>
-              <div class="info-tip">Shows what Jarvis last heard and parsed. Useful for debugging if a command didn't work — check what text was actually recognized.
+            <div class="info-tip">What Jarvis last heard. If a command didn't work, check what was recognized here.
 
-Wake word: <strong>Jarvis</strong>
-Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also work. Commands are matched by keywords, not exact phrases.</div>
+Fuzzy matching is on — "Jarves", "crait timer", "valt" etc. all work. Commands match by keywords, not exact phrases.</div>
           </div>
         </div>
-        <div class="stats" aria-label="Voice Debug">
+        <div class="stats">
           <div class="stat">
             <div class="label">Last Heard</div>
-            <div class="value" id="lastHeard" style="font-size: 1rem; font-weight: 500;">Nothing yet</div>
+            <div class="value" id="lastHeard" style="font-size:0.9rem;font-weight:500;">Nothing yet</div>
           </div>
           <div class="stat">
             <div class="label">Wake Phrase</div>
-            <div class="value" id="wakePhrase" style="font-size: 1rem; font-weight: 500;">Jarvis</div>
+            <div class="value" id="wakePhrase" style="font-size:0.9rem;font-weight:500;">Jarvis</div>
           </div>
         </div>
       </section>
-    </section>
-
-    <div class="status" id="status">Fetching server data...</div>
-    <div class="footer" id="lastUpdated">Last updated: --</div>
+    </div>
   </main>
 
   <script>
@@ -715,21 +710,29 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       stopVaultButton: document.getElementById("stopVaultButton"),
       vaultStatus: document.getElementById("vaultStatus"),
       vaultRemaining: document.getElementById("vaultRemaining"),
+      vaultDisplay: document.getElementById("vaultDisplay"),
       timerInput: document.getElementById("timerInput"),
       setTimerButton: document.getElementById("setTimerButton"),
       stopTimerButton: document.getElementById("stopTimerButton"),
-      timerVisual: document.getElementById("timerVisual"),
-      timerLabelDisplay: document.getElementById("timerLabelDisplay"),
-      timerHeroRemaining: document.getElementById("timerHeroRemaining"),
-      timerHeroSubtext: document.getElementById("timerHeroSubtext"),
+      timerDisplay: document.getElementById("timerDisplay"),
+      timerStatus: document.getElementById("timerStatus"),
       voiceOrbWrap: document.getElementById("voiceOrbWrap"),
       voiceOrbText: document.getElementById("voiceOrbText"),
-      timerStatus: document.getElementById("timerStatus"),
-      timerRemaining: document.getElementById("timerRemaining"),
       playerCount: document.getElementById("playerCount"),
       mainServerName: document.getElementById("mainServerName"),
       status: document.getElementById("status"),
-      lastUpdated: document.getElementById("lastUpdated")
+      lastUpdated: document.getElementById("lastUpdated"),
+      // Summary strip
+      summaryPop: document.getElementById("summaryPop"),
+      summaryServer: document.getElementById("summaryServer"),
+      summaryVaultRing: document.getElementById("summaryVaultRing"),
+      summaryVaultText: document.getElementById("summaryVaultText"),
+      summaryVaultSub: document.getElementById("summaryVaultSub"),
+      summaryTimerRing: document.getElementById("summaryTimerRing"),
+      summaryTimerText: document.getElementById("summaryTimerText"),
+      summaryTimerSub: document.getElementById("summaryTimerSub"),
+      summaryNextEvent: document.getElementById("summaryNextEvent"),
+      summaryNextEta: document.getElementById("summaryNextEta"),
     };
 
     let pollTimer;
@@ -742,6 +745,8 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
     let recognitionActive = false;
     let manualStop = false;
     let heardWakePhrase = false;
+    let waitingForCommand = false;
+    let waitingForCommandTimer = null;
     let microphoneStream = null;
     let mainServerName = localStorage.getItem(MAIN_SERVER_KEY) || "";
     let mainServerPreviousPlayerCount = null;
@@ -996,6 +1001,12 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       elements.mainServerName.textContent = mainServer ? mainServer.name : "--";
       if (mainServer) {
         elements.mainServerSelect.value = mainServer.name;
+        elements.playerCount.textContent = mainServer.playerCount ?? "--";
+        elements.summaryPop.textContent = mainServer.playerCount ?? "--";
+        elements.summaryServer.textContent = mainServer.name;
+      } else {
+        elements.summaryPop.textContent = "--";
+        elements.summaryServer.textContent = "--";
       }
     }
 
@@ -1330,6 +1341,8 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       if (!mainServer) {
         elements.nextEventName.textContent = "--";
         elements.nextEventEta.textContent = "--";
+        elements.summaryNextEvent.textContent = "--";
+        elements.summaryNextEta.textContent = "set server";
         setEventStatus("Set a main server first so map-event tracking knows which reset time to follow.", true);
         return;
       }
@@ -1337,6 +1350,8 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       if (!lastEventType) {
         elements.nextEventName.textContent = "--";
         elements.nextEventEta.textContent = "--";
+        elements.summaryNextEvent.textContent = "--";
+        elements.summaryNextEta.textContent = "set last event";
         setEventStatus("Tell me which map event was last once, and I will keep the rotation going from there.");
         return;
       }
@@ -1344,13 +1359,18 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       if (!nextEvent) {
         elements.nextEventName.textContent = "--";
         elements.nextEventEta.textContent = "--";
+        elements.summaryNextEvent.textContent = "--";
+        elements.summaryNextEta.textContent = "--";
         setEventStatus("Waiting for enough reset information to calculate the next map event.", true);
         return;
       }
 
       const remaining = Math.max(0, nextEvent.nextEventTime - Date.now());
+      const eventShort = nextEvent.nextEventType === "airdrop" ? "Drop" : "Crate";
       elements.nextEventName.textContent = formatEventName(nextEvent.nextEventType);
       elements.nextEventEta.textContent = formatDuration(remaining);
+      elements.summaryNextEvent.textContent = eventShort;
+      elements.summaryNextEta.textContent = formatMMSS(remaining);
       setEventStatus(`${formatEventName(nextEvent.nextEventType)} is the next map event on ${mainServer.name}.`);
 
       const reminderWindow = remaining <= 5 * 60 * 1000 ? "5m"
@@ -1426,25 +1446,45 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       return totalMs;
     }
 
+    const RING_CIRCUMFERENCE = 138.2; // 2π × r22
+
+    function setRingProgress(ringEl, ratio) {
+      const offset = RING_CIRCUMFERENCE * (1 - Math.max(0, Math.min(1, ratio)));
+      ringEl.style.strokeDashoffset = offset.toFixed(1);
+    }
+
+    function formatMMSS(ms) {
+      if (ms <= 0) return "00:00";
+      const totalSec = Math.ceil(ms / 1000);
+      const m = Math.floor(totalSec / 60);
+      const s = totalSec % 60;
+      return `${String(m).padStart(2,"0")}:${String(s).padStart(2,"0")}`;
+    }
+
     function updateTimerDisplay() {
       if (!timerTargetMs) {
-        elements.timerRemaining.textContent = "--";
-        elements.timerLabelDisplay.textContent = "Lockedcrate Timer";
-        elements.timerHeroRemaining.textContent = "--";
-        elements.timerHeroSubtext.textContent = "Start the lockedcrate timer to see the countdown ring.";
-        elements.timerVisual.style.setProperty("--timer-progress", "100");
+        if (elements.timerDisplay) {
+          elements.timerDisplay.textContent = "--:--";
+          elements.timerDisplay.className = "plain-timer idle";
+        }
         setTimerStatus("No active lockedcrate timer.");
+        // Summary ring
+        setRingProgress(elements.summaryTimerRing, 0);
+        elements.summaryTimerText.textContent = "--";
+        elements.summaryTimerSub.textContent = "idle";
         return;
       }
 
       const remaining = timerTargetMs - Date.now();
       if (remaining <= 0) {
-        elements.timerRemaining.textContent = "0s";
-        elements.timerLabelDisplay.textContent = timerLabel || "Lockedcrate Timer";
-        elements.timerHeroRemaining.textContent = "0s";
-        elements.timerHeroSubtext.textContent = "Finished";
-        elements.timerVisual.style.setProperty("--timer-progress", "0");
+        if (elements.timerDisplay) {
+          elements.timerDisplay.textContent = "00:00";
+          elements.timerDisplay.className = "plain-timer idle";
+        }
         setTimerStatus("Lockedcrate timer finished.");
+        setRingProgress(elements.summaryTimerRing, 0);
+        elements.summaryTimerText.textContent = "done";
+        elements.summaryTimerSub.textContent = "opened";
         speakText(`${timerLabel || "Lockedcrate"} is open. Locked crate has spawned.`);
         timerTargetMs = 0;
         timerLabel = "";
@@ -1455,15 +1495,17 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
         return;
       }
 
-      const remainingRatio = timerDurationMs > 0
-        ? Math.min(1, Math.max(0, remaining / timerDurationMs))
-        : 0;
-      elements.timerVisual.style.setProperty("--timer-progress", `${Math.round(remainingRatio * 100)}`);
-      elements.timerLabelDisplay.textContent = timerLabel || "Lockedcrate Timer";
-      elements.timerHeroRemaining.textContent = formatDuration(remaining);
-      elements.timerHeroSubtext.textContent = "Jarvis will announce when the locked crate opens.";
-      elements.timerRemaining.textContent = formatDuration(remaining);
-      setTimerStatus(`${timerLabel || "Lockedcrate Timer"} is running.`);
+      const ratio = timerDurationMs > 0 ? remaining / timerDurationMs : 1;
+      const mmss = formatMMSS(remaining);
+      if (elements.timerDisplay) {
+        elements.timerDisplay.textContent = mmss;
+        elements.timerDisplay.className = "plain-timer";
+      }
+      setTimerStatus(`Lockedcrate timer running — ${formatDuration(remaining)} left.`);
+      // Summary ring
+      setRingProgress(elements.summaryTimerRing, ratio);
+      elements.summaryTimerText.textContent = formatMMSS(remaining);
+      elements.summaryTimerSub.textContent = "running";
     }
 
     function startTimer(durationMs, spokenLabel, shouldSpeakConfirmation = true) {
@@ -1506,7 +1548,14 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
 
       if (!vaultActive || !vaultOpenedAtMs) {
         elements.vaultRemaining.textContent = "--";
+        if (elements.vaultDisplay) {
+          elements.vaultDisplay.textContent = "--:--";
+          elements.vaultDisplay.className = "plain-timer vault idle";
+        }
         setVaultStatus("Vault timer is idle.");
+        setRingProgress(elements.summaryVaultRing, 0);
+        elements.summaryVaultText.textContent = "--";
+        elements.summaryVaultSub.textContent = "idle";
         return;
       }
 
@@ -1521,8 +1570,15 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       const remaining = closeAtMs - Date.now();
 
       if (remaining <= 0) {
-        elements.vaultRemaining.textContent = "0s";
+        elements.vaultRemaining.textContent = "00:00";
+        if (elements.vaultDisplay) {
+          elements.vaultDisplay.textContent = "00:00";
+          elements.vaultDisplay.className = "plain-timer vault idle";
+        }
         setVaultStatus(`Vault on ${mainServer.name} has closed.`);
+        setRingProgress(elements.summaryVaultRing, 0);
+        elements.summaryVaultText.textContent = "done";
+        elements.summaryVaultSub.textContent = "closed";
         if (!vaultClosedAnnounced) {
           vaultClosedAnnounced = true;
           speakText(`Vault on ${mainServer.name} has closed.`);
@@ -1534,8 +1590,17 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
         return;
       }
 
+      const mmss = formatMMSS(remaining);
       elements.vaultRemaining.textContent = formatDuration(remaining);
-      setVaultStatus(`Vault on ${mainServer.name} closes in ${formatDuration(remaining)} and updates with live pop.`);
+      if (elements.vaultDisplay) {
+        elements.vaultDisplay.textContent = mmss;
+        elements.vaultDisplay.className = "plain-timer vault";
+      }
+      setVaultStatus(`Vault on ${mainServer.name} closes in ${formatDuration(remaining)}.`);
+      const ratio = durationMs > 0 ? remaining / durationMs : 1;
+      setRingProgress(elements.summaryVaultRing, ratio);
+      elements.summaryVaultText.textContent = mmss;
+      elements.summaryVaultSub.textContent = "open";
 
       if (remaining <= 5 * 60 * 1000 && !vaultFiveMinuteWarned) {
         vaultFiveMinuteWarned = true;
@@ -1609,6 +1674,19 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       const normalized = transcript.toLowerCase().trim();
       setLastHeard(transcript);
 
+      // If we're in "waiting for command" mode, treat this utterance as the command directly
+      if (waitingForCommand) {
+        clearTimeout(waitingForCommandTimer);
+        waitingForCommand = false;
+        heardWakePhrase = true;
+        showVoiceOrb("listening", "Jarvis");
+        setListeningStatus(`Follow-up command: "${transcript}"`);
+        // Re-enter processVoiceCommand but now with the transcript treated as a bare command
+        // by injecting a fake wake match
+        dispatchCommand(normalized, transcript);
+        return;
+      }
+
       const wakeMatch = findWakePhrase(normalized);
       if (!wakeMatch) {
         return;
@@ -1618,60 +1696,84 @@ Fuzzy matching is on — similar-sounding words like "Jarves" or "Jarvas" also w
       showVoiceOrb("listening", "Jarvis");
 
       // Extract the command: everything after the wake word
-      // wakeMatch.index is char position of wake word start; skip past the whole wake word
       let command = "";
       {
         const afterWake = normalized.slice(wakeMatch.index + wakeMatch.variant.length).trim();
-        // Also try stripping a leading "hey" if the transcript was "hey jarvis ..."
         const heyStripped = normalized.replace(/^hey\s+/, "").trim();
         const afterHeyWake = heyStripped.slice(heyStripped.indexOf(wakeMatch.variant) !== -1
           ? heyStripped.indexOf(wakeMatch.variant) + wakeMatch.variant.length
           : 0).trim();
         command = afterWake.length >= afterHeyWake.length ? afterWake : afterHeyWake;
-        // If command is empty or just the wake word itself, try the whole normalized minus any jarvis token
         if (!command) {
           command = normalized.split(/\s+/).filter((w) => !fuzzyMatch(w, "jarvis", 0.58)).join(" ").trim();
         }
       }
+
+      // ---- EMPTY / JUST WAKE WORD → "Yeah?" ----
+      if (!command || command.length < 2) {
+        setListeningStatus("Wake word heard. Waiting for command...");
+        speakText("Yeah?");
+        waitingForCommand = true;
+        clearTimeout(waitingForCommandTimer);
+        // If no follow-up arrives within 8 seconds, reset
+        waitingForCommandTimer = setTimeout(() => {
+          waitingForCommand = false;
+          setListeningStatus("Voice commands are armed. Say Jarvis.");
+        }, 8000);
+        hideVoiceOrb(500);
+        return;
+      }
+
       setListeningStatus(`Wake phrase heard. Processing: "${transcript}" → command: "${command}"`);
+      dispatchCommand(command, transcript);
+    }
+
+    function dispatchCommand(command, transcript) {
 
       // Helper: returns true if command contains a fuzzy match for the vault word
       // "volt", "valt", "vault", "vot" etc.
       function cmdHasVault(cmd) {
-        return cmd.includes("vault") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "vault", 0.62));
+        const vaultSounds = ["vault","valt","volt","vout","vaut","bolt","falt","vawlt"];
+        return vaultSounds.some((v) => cmd.includes(v))
+          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "vault", 0.60));
       }
       function cmdHasLockedCrate(cmd) {
-        return cmd.includes("locked crate") || cmd.includes("lockedcrate")
-          || fuzzyIncludes(cmd, "locked crate", 0.72) || fuzzyIncludes(cmd, "lockedcrate", 0.72);
+        // "locked crate", "lock crate", "crate", "crait", "lockedcrate", "lock create"
+        const crateSounds = ["locked crate","lockedcrate","lock crate","lock create","crate","crait","crayt","create","krait"];
+        return crateSounds.some((v) => cmd.includes(v))
+          || fuzzyIncludes(cmd, "locked crate", 0.68)
+          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "crate", 0.68));
       }
       function cmdHasAirdrop(cmd) {
-        return cmd.includes("airdrop") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "airdrop", 0.68));
+        return cmd.includes("airdrop") || cmd.includes("air drop") || cmd.includes("drop")
+          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "airdrop", 0.65));
       }
       function cmdHasStop(cmd) {
-        // Only exact word matches for very short words to avoid false positives
         const words = cmd.split(/\s+/);
-        return ["stop","cancel","end","clear","kill"].some((w) => cmd.includes(w))
+        return ["stop","cancel","end","clear","kill","pause"].some((w) => cmd.includes(w))
           || words.some((t) => t === "off");
       }
       function cmdHasStart(cmd) {
-        return ["start","begin","open","launch"].some((w) => cmd.includes(w))
-          || cmd.split(/\s+/).some((t) => fuzzyMatch(t, "start", 0.80));
+        return ["start","begin","open","launch","go","run","activate","set","kick"].some((w) => cmd.includes(w))
+          || cmd.split(/\s+/).some((t) => fuzzyMatch(t, "start", 0.78));
       }
       function cmdHasTimer(cmd) {
-        return cmd.includes("timer") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "timer", 0.72));
+        const timerSounds = ["timer","timmer","timed","timing","countdown","count down","counter"];
+        return timerSounds.some((v) => cmd.includes(v))
+          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "timer", 0.70));
       }
       function cmdHasTimeLeft(cmd) {
-        return fuzzyIncludes(cmd, "how long", 0.75) || cmd.includes("time left") || cmd.includes("remaining") || cmd.includes("how much");
+        return fuzzyIncludes(cmd, "how long", 0.75) || cmd.includes("time left") || cmd.includes("remaining")
+          || cmd.includes("how much") || cmd.includes("how far") || cmd.includes("time on")
+          || cmd.includes("left on") || cmd.includes("time is");
       }
       function cmdHasRefresh(cmd) {
-        return cmd.includes("refresh") || cmd.includes("update") || cmd.includes("check server")
+        return cmd.includes("refresh") || cmd.includes("update") || cmd.includes("check server") || cmd.includes("reload")
           || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "refresh", 0.70));
       }
       function cmdHasPop(cmd) {
-        return ["pop","population","players","count","online"].some((w) => cmd.includes(w) || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.75)));
-      }
-      function cmdHasAlarm(cmd) {
-        return cmd.includes("alarm") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "alarm", 0.75));
+        return ["pop","population","players","count","online","how many"].some((w) => cmd.includes(w)
+          || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.75)));
       }
       function cmdHasSpeech(cmd) {
         return cmd.includes("speech") || cmd.includes("voice output") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "speech", 0.72));
