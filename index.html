@@ -1390,11 +1390,23 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
     }
 
     function getHourlyEventAnchor(server) {
-      if (!server?.wipeEpoch) {
-        return null;
-      }
+      // wipeEpoch is Unix seconds of when the server last wiped/restarted.
+      // Drops happen every exact hour after that restart time.
+      // e.g. restart at 8:08 → drops at 9:08, 10:08, 11:08 ...
+      if (!server?.wipeEpoch) return null;
+      return Number(server.wipeEpoch) * 1000; // return the wipe time itself as the anchor
+    }
 
-      return Number(server.wipeEpoch) * 1000 + 60 * 60 * 1000;
+    function getNextDropTimeMs(server) {
+      // Returns the epoch ms of the next scheduled drop
+      const wipeMs = getHourlyEventAnchor(server);
+      if (!wipeMs) return null;
+      const now = Date.now();
+      if (now < wipeMs) return wipeMs + 60 * 60 * 1000; // first drop is 1h after wipe
+      const elapsed = now - wipeMs;
+      const hoursSinceWipe = Math.floor(elapsed / (60 * 60 * 1000));
+      // Next drop is at (hoursSinceWipe + 1) * 1h after wipe
+      return wipeMs + (hoursSinceWipe + 1) * 60 * 60 * 1000;
     }
 
     function getOppositeEvent(eventType) {
@@ -1411,23 +1423,28 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
 
     function getNextMapEvent() {
       const mainServer = getMainServer();
-      const anchorMs = getHourlyEventAnchor(mainServer);
-      if (!mainServer || !anchorMs || !mapEventCalibration) {
-        return null;
-      }
+      if (!mainServer || !mapEventCalibration) return null;
+
+      const nextDropTime = getNextDropTimeMs(mainServer);
+      if (!nextDropTime) return null;
 
       const now = Date.now();
-      const referenceTime = lastEventObservedAt || now;
-      const nextEventTime = now < anchorMs
-        ? anchorMs
-        : anchorMs + (Math.floor((now - anchorMs) / (60 * 60 * 1000)) + 1) * 60 * 60 * 1000;
-      const futureSteps = Math.max(1, Math.round((nextEventTime - referenceTime) / (60 * 60 * 1000)));
-      const nextEventType = futureSteps % 2 === 1 ? getOppositeEvent(mapEventCalibration) : mapEventCalibration;
+      // How many drop slots have passed since the calibration?
+      // Calibration recorded what event just happened at lastEventObservedAt.
+      // Each slot is 1 hour. Odd slots from calibration = opposite event, even = same.
+      const wipeMs = Number(mainServer.wipeEpoch) * 1000;
+      const calibrationSlot = lastEventObservedAt > wipeMs
+        ? Math.floor((lastEventObservedAt - wipeMs) / (60 * 60 * 1000))
+        : 0;
+      const nextDropSlot = Math.floor((nextDropTime - wipeMs) / (60 * 60 * 1000));
+      const slotDiff = nextDropSlot - calibrationSlot;
+      // If slotDiff is odd, the next event is the opposite of what we calibrated
+      const nextEventType = slotDiff % 2 === 0 ? mapEventCalibration : getOppositeEvent(mapEventCalibration);
 
       return {
         server: mainServer,
         nextEventType,
-        nextEventTime
+        nextEventTime: nextDropTime,
       };
     }
 
@@ -1849,52 +1866,66 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
 
       // Helper: returns true if command contains a fuzzy match for the vault word
       // "volt", "valt", "vault", "vot" etc.
+      // ── Wide-range keyword helpers ──────────────────────────────────────
       function cmdHasVault(cmd) {
-        const vaultSounds = ["vault","valt","volt","vout","vaut","bolt","falt","vawlt"];
+        const vaultSounds = ["vault","valt","volt","vout","vaut","vawlt","balt"];
         return vaultSounds.some((v) => cmd.includes(v))
-          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "vault", 0.60));
+          || cmd.split(/\s+/).some((w) => w.length > 3 && fuzzyMatch(w, "vault", 0.60));
       }
       function cmdHasLockedCrate(cmd) {
-        // "locked crate", "lock crate", "crate", "crait", "lockedcrate", "lock create"
-        const crateSounds = ["locked crate","lockedcrate","lock crate","lock create","crate","crait","crayt","create","krait"];
+        const crateSounds = ["locked crate","lockedcrate","lock crate","lock create","locked crait","locked crayt","crate","crait","crayt","krait"];
         return crateSounds.some((v) => cmd.includes(v))
           || fuzzyIncludes(cmd, "locked crate", 0.68)
-          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "crate", 0.68));
+          || cmd.split(/\s+/).some((w) => w.length > 3 && fuzzyMatch(w, "crate", 0.68));
       }
       function cmdHasAirdrop(cmd) {
         return cmd.includes("airdrop") || cmd.includes("air drop") || cmd.includes("drop")
-          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "airdrop", 0.65));
+          || cmd.split(/\s+/).some((w) => w.length > 4 && fuzzyMatch(w, "airdrop", 0.65));
       }
       function cmdHasStop(cmd) {
-        const words = cmd.split(/\s+/);
         return ["stop","cancel","end","clear","kill","pause"].some((w) => cmd.includes(w))
-          || words.some((t) => t === "off");
+          || cmd.split(/\s+/).some((t) => t === "off");
       }
       function cmdHasStart(cmd) {
-        return ["start","begin","open","launch","go","run","activate","set","kick"].some((w) => cmd.includes(w))
-          || cmd.split(/\s+/).some((t) => fuzzyMatch(t, "start", 0.78));
+        // Narrow — avoid collisions with "open" (vault query) and "how long" (estimate)
+        return ["start","begin","launch","activate","kick"].some((w) => cmd.includes(w))
+          || cmd.split(/\s+/).some((t) => t.length > 4 && fuzzyMatch(t, "start", 0.82));
+      }
+      function cmdHasOpened(cmd) {
+        return cmd.includes("opened") || cmd.includes("open") || cmd.includes("running") || cmd.includes("active") || cmd.includes("go");
+      }
+      function cmdHasEstimate(cmd) {
+        // "what would the vault timer be", "how long would it be", "estimate", "predict"
+        return cmd.includes("would") || cmd.includes("estimate") || cmd.includes("predict")
+          || cmd.includes("calculate") || cmd.includes("guess") || cmd.includes("is the vault timer")
+          || cmd.includes("what is the vault") || cmd.includes("vault timer be")
+          || (cmd.includes("how long") && !cmd.includes("left") && !cmd.includes("remaining")
+              && !cmd.includes("on the") && !cmd.includes("do i") && !cmd.includes("still"));
       }
       function cmdHasTimer(cmd) {
-        const timerSounds = ["timer","timmer","timed","timing","countdown","count down","counter"];
+        const timerSounds = ["timer","timmer","timing","countdown","count down","counter","clock"];
         return timerSounds.some((v) => cmd.includes(v))
-          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "timer", 0.70));
+          || cmd.split(/\s+/).some((w) => w.length > 3 && fuzzyMatch(w, "timer", 0.72));
       }
       function cmdHasTimeLeft(cmd) {
-        return fuzzyIncludes(cmd, "how long", 0.75) || cmd.includes("time left") || cmd.includes("remaining")
-          || cmd.includes("how much") || cmd.includes("how far") || cmd.includes("time on")
-          || cmd.includes("left on") || cmd.includes("time is");
+        return cmd.includes("time left") || cmd.includes("remaining") || cmd.includes("time on")
+          || cmd.includes("left on") || cmd.includes("how much time") || cmd.includes("how far")
+          || cmd.includes("how long left") || cmd.includes("how long on") || cmd.includes("how long do")
+          || cmd.includes("still got") || cmd.includes("still have")
+          || (cmd.includes("how long") && (cmd.includes("left") || cmd.includes("on") || cmd.includes("do i") || cmd.includes("still") || cmd.includes("got")));
       }
       function cmdHasRefresh(cmd) {
-        return cmd.includes("refresh") || cmd.includes("update") || cmd.includes("check server") || cmd.includes("reload")
-          || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "refresh", 0.70));
+        return cmd.includes("refresh") || cmd.includes("reload") || cmd.includes("check server")
+          || cmd.includes("update server") || cmd.split(/\s+/).some((w) => w.length > 5 && fuzzyMatch(w, "refresh", 0.72));
       }
       function cmdHasPop(cmd) {
-        return ["pop","population","players","count","online","how many"].some((w) => cmd.includes(w)
-          || cmd.split(/\s+/).some((t) => fuzzyMatch(t, w, 0.75)));
+        return ["pop","population","players","online","how many"].some((w) => cmd.includes(w));
       }
       function cmdHasSpeech(cmd) {
-        return cmd.includes("speech") || cmd.includes("voice output") || cmd.split(/\s+/).some((w) => fuzzyMatch(w, "speech", 0.72));
+        return cmd.includes("speech") || cmd.includes("voice output")
+          || cmd.split(/\s+/).some((w) => w.length > 5 && fuzzyMatch(w, "speech", 0.75));
       }
+      // ────────────────────────────────────────────────────────────────────
 
       // ---- REFRESH ----
       if (cmdHasRefresh(command)) {
@@ -1904,26 +1935,26 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
         return;
       }
 
+      // ---- VAULT DURATION ESTIMATE (must be before start-vault to avoid false trigger) ----
+      if (cmdHasVault(command) && cmdHasEstimate(command)) {
+        answerVaultDurationEstimate();
+        return;
+      }
+
       // ---- VAULT TIMER QUERY ----
       if (cmdHasVault(command) && cmdHasTimeLeft(command) && !cmdHasStart(command) && !cmdHasStop(command)) {
         answerVaultTimer();
         return;
       }
 
-      // ---- VAULT DURATION ESTIMATE ----
-      if (cmdHasVault(command) && (command.includes("would") || command.includes("length") || command.includes("long is") || command.includes("estimate"))) {
-        answerVaultDurationEstimate();
-        return;
-      }
-
       // ---- STOP VAULT TIMER ----
-      if (cmdHasVault(command) && cmdHasTimer(command) && cmdHasStop(command)) {
+      if (cmdHasVault(command) && cmdHasStop(command)) {
         stopVaultTimer();
         return;
       }
 
       // ---- START VAULT TIMER ----
-      if (cmdHasVault(command) && (cmdHasTimer(command) || cmdHasStart(command) || command.includes("opened"))) {
+      if (cmdHasVault(command) && (cmdHasStart(command) || cmdHasOpened(command) || cmdHasTimer(command))) {
         startVaultTimer();
         return;
       }
@@ -1935,13 +1966,13 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
       }
 
       // ---- STOP LOCKED CRATE TIMER ----
-      if (cmdHasLockedCrate(command) && cmdHasTimer(command) && cmdHasStop(command)) {
+      if (cmdHasLockedCrate(command) && cmdHasStop(command)) {
         stopTimer();
         return;
       }
 
       // ---- START LOCKED CRATE TIMER ----
-      if (cmdHasLockedCrate(command) && (cmdHasTimer(command) || cmdHasStart(command))) {
+      if (cmdHasLockedCrate(command) && (cmdHasStart(command) || cmdHasOpened(command) || cmdHasTimer(command))) {
         startTimer(15 * 60 * 1000, "Lockedcrate Timer");
         return;
       }
@@ -1952,18 +1983,8 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
         return;
       }
 
-      // ---- GENERIC TIMER STATUS ----
-      if (cmdHasTimeLeft(command) && cmdHasTimer(command)) {
-        answerBothTimers();
-        return;
-      }
-
-      // ---- TIMER STATUS (all timers) ----
-      if (
-        command.includes("timer status")
-        || command.includes("what timers")
-        || fuzzyIncludes(command, "how long left", 0.75)
-      ) {
+      // ---- GENERIC TIMER STATUS — "how long left", "timers", "time on timer" ----
+      if (cmdHasTimeLeft(command) || cmdHasTimer(command) || command.includes("timer status") || command.includes("what timers")) {
         answerBothTimers();
         return;
       }
@@ -2100,18 +2121,19 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
       }
 
       // ---- BEST GUESS FALLBACK ----
-      // Score each action and pick the most likely one instead of giving up
       const scores = [
-        { score: cmdHasPop(command) ? 3 : 0, action: () => answerServerPop(findServerMention(command)) },
-        { score: (cmdHasVault(command) ? 2 : 0) + (cmdHasTimeLeft(command) ? 2 : 0), action: () => answerVaultTimer() },
-        { score: (cmdHasLockedCrate(command) ? 2 : 0) + (cmdHasTimeLeft(command) ? 2 : 0), action: () => answerLockedcrateTimer() },
-        { score: cmdHasVault(command) && cmdHasStart(command) ? 4 : 0, action: () => startVaultTimer() },
-        { score: cmdHasLockedCrate(command) && cmdHasStart(command) ? 4 : 0, action: () => startTimer(15 * 60 * 1000, "Lockedcrate Timer") },
+        { score: (cmdHasVault(command) && cmdHasEstimate(command)) ? 5 : 0, action: () => answerVaultDurationEstimate() },
+        { score: (cmdHasVault(command) && cmdHasStart(command)) ? 5 : cmdHasVault(command) ? 3 : 0, action: () => startVaultTimer() },
+        { score: (cmdHasLockedCrate(command) && cmdHasStart(command)) ? 5 : (cmdHasLockedCrate(command) && cmdHasTimer(command)) ? 4 : 0, action: () => startTimer(15 * 60 * 1000, "Lockedcrate Timer") },
+        { score: (cmdHasVault(command) && cmdHasTimeLeft(command)) ? 5 : 0, action: () => answerVaultTimer() },
+        { score: (cmdHasLockedCrate(command) && cmdHasTimeLeft(command)) ? 5 : 0, action: () => answerLockedcrateTimer() },
+        { score: cmdHasTimer(command) ? 3 : 0, action: () => answerBothTimers() },
+        { score: cmdHasTimeLeft(command) ? 3 : 0, action: () => answerBothTimers() },
         { score: cmdHasAirdrop(command) ? 2 : 0, action: () => setLastEvent("airdrop") },
         { score: cmdHasLockedCrate(command) ? 2 : 0, action: () => setLastEvent("lockedcrate") },
         { score: cmdHasRefresh(command) ? 3 : 0, action: () => { refreshServers(); speakText("Refreshing server data."); } },
-        { score: cmdHasTimer(command) ? 2 : 0, action: () => answerBothTimers() },
-        { score: (command.includes("next") || command.includes("event")) ? 2 : 0, action: () => { const ne = getNextMapEvent(); if (ne) { const r = Math.max(0, ne.nextEventTime - Date.now()); speakText(`Next event is ${formatEventName(ne.nextEventType)} in ${formatDurationSpeech(r)}.`); } else { answerServerPop(getMainServer()); } } },
+        { score: (command.includes("next") || command.includes("event")) ? 2 : 0, action: () => { const ne = getNextMapEvent(); if (ne) { const r = Math.max(0, ne.nextEventTime - Date.now()); speakText(`Next event is ${formatEventName(ne.nextEventType)} in ${formatDurationSpeech(r)}.`); } else { speakText("Not calibrated yet."); } } },
+        { score: (cmdHasPop(command) && isPopulationQuestion(command)) ? 3 : 0, action: () => answerServerPop(findServerMention(command)) },
       ];
 
       const best = scores.reduce((a, b) => b.score > a.score ? b : a, scores[0]);
@@ -2122,8 +2144,8 @@ Say <strong>comms</strong> to mute automatic speech for 60 seconds.</div>
       }
 
       // Absolute last resort: just report current pop
-      setListeningStatus(`Couldn't parse command, reporting main server pop.`);
-      answerServerPop(getMainServer() || findServerMention("main server"));
+      setListeningStatus("Couldn't parse command — try rephrasing.");
+      speakText("Sorry, I didn't catch that. Try saying something like: vault timer, crate timer, or what's next.");
     }
 
     function stopListening() {
